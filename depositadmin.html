@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | IND-CLUB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 p-6">
+    <div class="max-w-4xl mx-auto space-y-8">
+        <div class="bg-white p-8 rounded-[35px] shadow-lg">
+            <h3 class="font-black mb-4 uppercase text-xs text-gray-400">Manage UPI IDs</h3>
+            <div class="flex gap-4 mb-6">
+                <input id="newUpi" type="text" placeholder="Add UPI (e.g. upi@okicici)" class="flex-1 p-4 bg-gray-50 rounded-2xl border">
+                <button onclick="addUPI()" class="bg-black text-white px-8 rounded-2xl font-bold">ADD</button>
+            </div>
+            <div id="upiList" class="space-y-2"></div>
+        </div>
+
+        <div class="bg-white p-8 rounded-[35px] shadow-lg">
+            <h3 class="font-black mb-4 uppercase text-xs text-gray-400">Pending Requests</h3>
+            <div id="depositList" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue, remove, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
+            authDomain: "ind-club-v1.firebaseapp.com",
+            databaseURL: "https://ind-club-v1-default-rtdb.firebaseio.com",
+            projectId: "ind-club-v1",
+            storageBucket: "ind-club-v1.appspot.com",
+            messagingSenderId: "1043970059809",
+            appId: "1:1043970059809:web:f730b857ca3a76c061fd60"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Manage UPIs
+        window.addUPI = () => {
+            const upi = document.getElementById('newUpi').value;
+            if(upi) push(ref(db, 'adminSettings/upis'), { upi });
+        };
+
+        onValue(ref(db, 'adminSettings/upis'), (snap) => {
+            const div = document.getElementById('upiList'); div.innerHTML = "";
+            snap.forEach(c => {
+                div.innerHTML += `<div class="flex justify-between p-3 bg-gray-50 rounded-xl">
+                    <span class="font-bold">${c.val().upi}</span>
+                    <button onclick="deleteItem('adminSettings/upis/${c.key}')" class="text-red-500 font-bold">DEL</button>
+                </div>`;
+            });
+        });
+
+        // Deposit Approval Logic
+        onValue(ref(db, 'pendingDeposits'), (snap) => {
+            const list = document.getElementById('depositList'); list.innerHTML = "";
+            snap.forEach(c => {
+                const d = c.val();
+                if(d.status === 'pending') {
+                    list.innerHTML += `
+                    <div class="p-6 border rounded-[25px] bg-white shadow-sm">
+                        <div class="flex justify-between mb-4">
+                            <span class="font-black text-lg">₹${d.amount}</span>
+                            <span class="text-[10px] bg-blue-100 text-blue-600 px-2 py-1 rounded-lg font-bold uppercase">UTR: ${d.utr}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-4">User: ${d.email}</p>
+                        <div class="flex gap-2">
+                            <button onclick="action('${c.key}', '${d.uid}', ${d.amount}, 'approve')" class="flex-1 bg-green-500 text-white p-3 rounded-xl font-bold">APPROVE</button>
+                            <button onclick="action('${c.key}', '${d.uid}', ${d.amount}, 'cancel')" class="flex-1 bg-red-500 text-white p-3 rounded-xl font-bold">REJECT</button>
+                        </div>
+                    </div>`;
+                }
+            });
+        });
+
+        window.action = (key, uid, amt, type) => {
+            if(type === 'approve') {
+                // Add balance
+                runTransaction(ref(db, `users/${uid}/balance`), (curr) => (curr || 0) + Number(amt));
+                update(ref(db, `users/${uid}`), { lastStatus: 'approved' });
+                update(ref(db, `pendingDeposits/${key}`), { status: 'approved' });
+                
+                // Referral Logic (Milestone)
+                checkReferral(uid);
+            } else {
+                const r = prompt("Reason for rejection?");
+                update(ref(db, `pendingDeposits/${key}`), { status: 'cancelled', reason: r });
+            }
+        };
+
+        async function checkReferral(uid) {
+            onValue(ref(db, `users/${uid}`), (snap) => {
+                const u = snap.val();
+                if(!u.firstDepo && u.referrer) {
+                    // Award bonus to referrer
+                    const refID = u.referrer;
+                    runTransaction(ref(db, `users/${refID}/refCount`), (c) => (c || 0) + 1);
+                    // Add milestone rewards here based on refCount (1, 10, 25)
+                    update(ref(db, `users/${uid}`), { firstDepo: true });
+                }
+            }, {onlyOnce: true});
+        }
+
+        window.deleteItem = (p) => remove(ref(db, p));
+    </script>
+</body>
+</html>
