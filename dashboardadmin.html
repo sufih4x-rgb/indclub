@@ -6,42 +6,52 @@
     <title>Master Control | Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-100 p-6">
+<body class="bg-slate-50 p-6 md:p-12">
 
-    <div class="max-w-4xl mx-auto space-y-6">
-        <h1 class="text-4xl font-black italic tracking-tighter">MASTER DASHBOARD CONTROL</h1>
+    <div class="max-w-4xl mx-auto space-y-8">
+        <h1 class="text-4xl font-black italic uppercase tracking-tighter">Admin Control Center</h1>
 
-        <div class="bg-white p-6 rounded-[30px] shadow-xl">
-            <h2 class="text-xs font-black text-gray-400 mb-4 uppercase">Slider Management</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input id="slImg" type="text" placeholder="Image URL" class="p-4 bg-gray-50 rounded-2xl outline-none border">
-                <input id="slUrl" type="text" placeholder="Redirect Link" class="p-4 bg-gray-50 rounded-2xl outline-none border">
+        <div class="bg-white p-8 rounded-[35px] shadow-xl border">
+            <h3 class="text-xs font-black text-gray-400 mb-4 uppercase">Add New Slider Image</h3>
+            <div class="space-y-4">
+                <input type="file" id="upFile" class="w-full p-4 border-2 border-dashed rounded-2xl">
+                <input id="upLink" type="text" placeholder="Redirect URL (e.g. game.html)" class="w-full p-4 bg-gray-50 rounded-2xl border">
+                <button onclick="addSlide()" id="upBtn" class="w-full bg-black text-white p-5 rounded-2xl font-black">UPLOAD & ADD SLIDE</button>
             </div>
-            <button onclick="updateSlider()" class="w-full mt-4 bg-black text-white p-4 rounded-2xl font-black">UPDATE SLIDER</button>
+            
+            <h3 class="text-xs font-black text-gray-400 mt-8 mb-4 uppercase">Current Sliders (Delete)</h3>
+            <div id="slideManager" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
         </div>
 
-        <div class="bg-white p-6 rounded-[30px] shadow-xl">
-            <h2 class="text-xs font-black text-gray-400 mb-4 uppercase">Add New Button (Grid or Sidebar)</h2>
+        <div class="bg-white p-8 rounded-[35px] shadow-xl border">
+            <h3 class="text-xs font-black text-gray-400 mb-4 uppercase">Add New Button (Grid or Sidebar)</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                <input id="btnName" type="text" placeholder="Name" class="p-4 bg-gray-50 rounded-2xl border">
-                <input id="btnUrl" type="text" placeholder="Link" class="p-4 bg-gray-50 rounded-2xl border">
-                <select id="btnType" class="p-4 bg-gray-50 rounded-2xl font-bold">
-                    <option value="mini">Grid Button (4-Column)</option>
-                    <option value="sidebar">Sidebar Link</option>
+                <input id="bName" type="text" placeholder="Button Name" class="p-4 bg-gray-50 border rounded-2xl">
+                <input id="bUrl" type="text" placeholder="Link (e.g. faq.html)" class="p-4 bg-gray-50 border rounded-2xl">
+                <select id="bType" class="p-4 bg-gray-50 border rounded-2xl font-bold">
+                    <option value="miniButtons">Grid Button (Dashboard)</option>
+                    <option value="sidebarLinks">Sidebar Link</option>
                 </select>
             </div>
-            <button onclick="addNewButton()" class="w-full bg-green-500 text-white p-4 rounded-2xl font-black">ADD BUTTON NOW</button>
-        </div>
+            <button onclick="addButton()" class="w-full bg-green-500 text-white p-4 rounded-2xl font-black">ADD BUTTON NOW</button>
 
-        <div class="bg-white p-6 rounded-[30px] shadow-xl">
-            <h2 class="text-xs font-black text-gray-400 mb-4 uppercase">Manage Existing Buttons</h2>
-            <div id="manageList" class="space-y-2"></div>
+            <div class="mt-8 space-y-6">
+                <div>
+                    <h4 class="text-[10px] font-bold text-blue-500 uppercase mb-2">Active Sidebar Links</h4>
+                    <div id="sidebarList" class="space-y-2"></div>
+                </div>
+                <div>
+                    <h4 class="text-[10px] font-bold text-green-500 uppercase mb-2">Active Grid Buttons</h4>
+                    <div id="gridList" class="space-y-2"></div>
+                </div>
+            </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, update, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getStorage, ref as sRef, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
@@ -55,44 +65,93 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+        const storage = getStorage(app);
 
-        window.updateSlider = () => {
-            const img = document.getElementById('slImg').value;
-            const url = document.getElementById('slUrl').value;
-            update(ref(db, 'adminSettings'), { sliderImg: img, sliderLink: url });
-            alert("Slider Updated!");
-        };
+        // --- SLIDER FUNCTIONS ---
+        window.addSlide = async () => {
+            const file = document.getElementById('upFile').files[0];
+            const link = document.getElementById('upLink').value;
+            if(!file) return alert("Select File First");
+            const btn = document.getElementById('upBtn');
+            btn.innerText = "UPLOADING..."; btn.disabled = true;
 
-        window.addNewButton = () => {
-            const name = document.getElementById('btnName').value;
-            const url = document.getElementById('btnUrl').value;
-            const type = document.getElementById('btnType').value;
-            const path = type === 'mini' ? 'adminSettings/miniButtons' : 'adminSettings/sidebarLinks';
-            push(ref(db, path), { name, url });
-            alert("Added!");
-        };
-
-        onValue(ref(db, 'adminSettings'), (snap) => {
-            const list = document.getElementById('manageList');
-            list.innerHTML = "";
-            const data = snap.val();
+            const path = sRef(storage, 'sliders/' + Date.now());
+            await uploadBytes(path, file);
+            const url = await getDownloadURL(path);
+            await push(ref(db, 'adminSettings/sliders'), { img: url, link: link || "#" });
             
-            ['miniButtons', 'sidebarLinks'].forEach(type => {
-                if(data[type]) {
-                    Object.keys(data[type]).forEach(key => {
-                        const item = data[type][key];
-                        list.innerHTML += `
-                        <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border">
-                            <span class="text-xs font-bold uppercase">${item.name} (${type})</span>
-                            <button onclick="delBtn('${type}/${key}')" class="text-red-500 font-bold">DELETE</button>
-                        </div>`;
-                    });
-                }
+            btn.innerText = "UPLOAD & ADD SLIDE"; btn.disabled = false;
+            alert("Slide Added!");
+        };
+
+        onValue(ref(db, 'adminSettings/sliders'), (snap) => {
+            const manager = document.getElementById('slideManager');
+            manager.innerHTML = "";
+            snap.forEach(child => {
+                manager.innerHTML += `
+                    <div class="relative rounded-xl overflow-hidden border p-2 bg-gray-50">
+                        <img src="${child.val().img}" class="w-full h-20 object-cover rounded-lg">
+                        <button onclick="deleteItem('sliders/${child.key}')" class="absolute top-1 right-1 bg-red-500 text-white p-1 px-2 rounded text-[10px] font-bold">DEL</button>
+                    </div>`;
             });
         });
 
-        window.delBtn = (path) => {
-            if(confirm("Delete this?")) remove(ref(db, 'adminSettings/' + path));
+        // --- BUTTON & SIDEBAR FUNCTIONS ---
+        window.addButton = () => {
+            const name = document.getElementById('bName').value;
+            const url = document.getElementById('bUrl').value;
+            const type = document.getElementById('bType').value;
+            if(!name || !url) return alert("Details bhariye!");
+
+            push(ref(db, `adminSettings/${type}`), { name, url });
+            alert("Button Added!");
+            document.getElementById('bName').value = "";
+            document.getElementById('bUrl').value = "";
+        };
+
+        // Load Sidebar and Grid Lists
+        onValue(ref(db, 'adminSettings'), (snap) => {
+            const data = snap.val();
+            const sList = document.getElementById('sidebarList');
+            const gList = document.getElementById('gridList');
+            sList.innerHTML = ""; gList.innerHTML = "";
+
+            if(data?.sidebarLinks) {
+                Object.keys(data.sidebarLinks).forEach(key => {
+                    sList.innerHTML += renderItem(key, data.sidebarLinks[key], 'sidebarLinks');
+                });
+            }
+            if(data?.miniButtons) {
+                Object.keys(data.miniButtons).forEach(key => {
+                    gList.innerHTML += renderItem(key, data.miniButtons[key], 'miniButtons');
+                });
+            }
+        });
+
+        function renderItem(key, item, path) {
+            return `
+                <div class="flex justify-between items-center bg-gray-50 p-3 rounded-xl border">
+                    <div>
+                        <p class="text-sm font-bold uppercase">${item.name}</p>
+                        <p class="text-[10px] text-gray-400">${item.url}</p>
+                    </div>
+                    <div class="flex gap-2">
+                        <button onclick="editItem('${path}/${key}', '${item.name}', '${item.url}')" class="text-blue-500 text-[10px] font-bold">EDIT</button>
+                        <button onclick="deleteItem('${path}/${key}')" class="text-red-500 text-[10px] font-bold">DELETE</button>
+                    </div>
+                </div>`;
+        }
+
+        window.deleteItem = (fullPath) => {
+            if(confirm("Pakka delete karna hai?")) remove(ref(db, 'adminSettings/' + fullPath));
+        };
+
+        window.editItem = (fullPath, oldName, oldUrl) => {
+            const newName = prompt("Naya Naam:", oldName);
+            const newUrl = prompt("Naya Link:", oldUrl);
+            if(newName && newUrl) {
+                update(ref(db, 'adminSettings/' + fullPath), { name: newName, url: newUrl });
+            }
         };
     </script>
 </body>
