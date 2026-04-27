@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Withdraw | IND-CLUB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 p-6">
+    <div class="max-w-4xl mx-auto space-y-6">
+        <h1 class="text-3xl font-black italic">WITHDRAWAL REQUESTS</h1>
+        <div id="adminList" class="space-y-4"></div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = { /* Same as above */ };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        onValue(ref(db, 'withdrawRequests'), snap => {
+            const list = document.getElementById('adminList'); list.innerHTML = "";
+            snap.forEach(c => {
+                const d = c.val();
+                if(d.status === 'pending') {
+                    const detailHtml = d.method === 'upi' ? 
+                        `<p class="text-blue-600 font-bold">UPI: ${d.details.upi}</p>` : 
+                        `<p class="text-blue-600 font-bold">ACC: ${d.details.acc} | IFSC: ${d.details.ifsc} | Name: ${d.details.name}</p>`;
+
+                    list.innerHTML += `
+                    <div class="bg-white p-6 rounded-[30px] border shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-2xl font-black">₹${d.amount}</h3>
+                                <p class="text-xs text-gray-400">${d.email}</p>
+                            </div>
+                            <span class="bg-black text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase">${d.method}</span>
+                        </div>
+                        ${detailHtml}
+                        <div class="flex gap-3 mt-6">
+                            <button onclick="handle('${c.key}', '${d.uid}', ${d.amount}, 'approve')" class="flex-1 bg-green-500 text-white p-4 rounded-2xl font-black">APPROVE</button>
+                            <button onclick="handle('${c.key}', '${d.uid}', ${d.amount}, 'reject')" class="flex-1 bg-red-500 text-white p-4 rounded-2xl font-black">REJECT</button>
+                        </div>
+                    </div>`;
+                }
+            });
+        });
+
+        window.handle = async (key, uid, amt, action) => {
+            if(action === 'approve') {
+                // Balance Deduct logic (Double check if enough balance)
+                await runTransaction(ref(db, `users/${uid}/balance`), (curr) => {
+                    if(curr >= amt) return curr - amt;
+                    else return curr;
+                });
+                update(ref(db, `withdrawRequests/${key}`), { status: 'approved' });
+            } else {
+                const reason = prompt("Enter Rejection Reason:");
+                update(ref(db, `withdrawRequests/${key}`), { status: 'rejected', reason: reason });
+            }
+        };
+    </script>
+</body>
+</html>
