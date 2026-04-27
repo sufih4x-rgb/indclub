@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IND-CLUB Dashboard | H4XTEAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #ff9933; --secondary: #138808; --bg: #f0f2f5; --white: #ffffff; }
+        body { font-family: 'Poppins', sans-serif; background-color: var(--bg); margin: 0; padding: 20px; }
+        
+        .admin-bar {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
+            text-align: center;
+        }
+
+        .btn-edit {
+            padding: 12px 25px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: 0.3s;
+        }
+        .btn-edit.active { background: #e74c3c; box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4); }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .nav-card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: 0.3s;
+            text-align: center;
+            border: 2px solid transparent;
+        }
+        .nav-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+        
+        .nav-link {
+            text-decoration: none;
+            color: var(--secondary);
+            font-weight: 700;
+            display: block;
+            padding: 10px;
+            background: #e8f5e9;
+            border-radius: 8px;
+        }
+
+        .edit-input {
+            display: none;
+            width: 100%;
+            padding: 8px;
+            margin-top: 8px;
+            border: 2px solid #eee;
+            border-radius: 8px;
+            box-sizing: border-box;
+            font-size: 12px;
+            font-family: inherit;
+        }
+
+        .editing .edit-input { display: block; }
+        .editing .nav-link { display: none; }
+        .editing { border-color: var(--primary); background: #fffaf5; }
+
+        #loading { font-weight: 600; color: var(--primary); margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="admin-bar">
+        <h2 style="margin:0 0 10px 0;">IND-CLUB Manager</h2>
+        <div id="loading">Connecting to Cloud...</div>
+        <button class="btn-edit" id="toggleEdit" onclick="toggleEditMode()">Enable Edit Mode</button>
+        <p id="status" style="font-size: 11px; color: #888; margin-top: 10px;">Login with Admin account to save changes permanently.</p>
+    </div>
+
+    <div class="grid-container" id="buttonGrid"></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+    // UPDATED FIREBASE CONFIGURATION
+    const firebaseConfig = {
+        apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
+        authDomain: "ind-club-v1.firebaseapp.com",
+        databaseURL: "https://ind-club-v1-default-rtdb.firebaseio.com",
+        projectId: "ind-club-v1",
+        storageBucket: "ind-club-v1.appspot.com",
+        messagingSenderId: "1043970059809",
+        appId: "1:1043970059809:web:f730b857ca3a76c061fd60"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const grid = document.getElementById('buttonGrid');
+    
+    let isEditMode = false;
+    let buttonData = [];
+
+    // 1. Fetch Data from Firebase (Realtime)
+    onValue(ref(db, 'dashboard_buttons'), (snapshot) => {
+        document.getElementById('loading').style.display = 'none';
+        if (snapshot.exists()) {
+            buttonData = snapshot.val();
+        } else {
+            // Initial Seed
+            buttonData = [];
+            for (let i = 1; i <= 60; i++) {
+                buttonData.push({ name: "Game " + i, url: "game" + i + ".html" });
+            }
+            set(ref(db, 'dashboard_buttons'), buttonData);
+        }
+        renderButtons();
+    });
+
+    // 2. Render Buttons function
+    function renderButtons() {
+        grid.innerHTML = '';
+        buttonData.forEach((btn, index) => {
+            const card = document.createElement('div');
+            card.className = `nav-card ${isEditMode ? 'editing' : ''}`;
+            card.innerHTML = `
+                <a href="${btn.url}" class="nav-link">${btn.name}</a>
+                <input type="text" class="edit-input" value="${btn.name}" onchange="updateFirebase(${index}, 'name', this.value)" placeholder="Button Name">
+                <input type="text" class="edit-input" value="${btn.url}" onchange="updateFirebase(${index}, 'url', this.value)" placeholder="Page Link">
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // 3. Update to Firebase
+    window.updateFirebase = (index, field, value) => {
+        const updates = {};
+        updates[`dashboard_buttons/${index}/${field}`] = value;
+        update(ref(db), updates).then(() => {
+            console.log("Cloud Updated!");
+        });
+    };
+
+    // 4. Toggle Mode
+    window.toggleEditMode = () => {
+        isEditMode = !isEditMode;
+        const btn = document.getElementById('toggleEdit');
+        const status = document.getElementById('status');
+        
+        if (isEditMode) {
+            btn.innerText = "Disable & Lock Changes";
+            btn.classList.add('active');
+            status.innerText = "EDITING MODE: All changes are live globally.";
+        } else {
+            btn.innerText = "Enable Edit Mode";
+            btn.classList.remove('active');
+            status.innerText = "Click 'Enable Edit Mode' to change button names and links.";
+        }
+        renderButtons();
+    };
+
+</script>
+
+</body>
+</html>
