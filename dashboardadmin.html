@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Master Control | Admin</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 p-6">
+
+    <div class="max-w-4xl mx-auto space-y-6">
+        <h1 class="text-4xl font-black italic tracking-tighter">MASTER DASHBOARD CONTROL</h1>
+
+        <div class="bg-white p-6 rounded-[30px] shadow-xl">
+            <h2 class="text-xs font-black text-gray-400 mb-4 uppercase">Slider Management</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input id="slImg" type="text" placeholder="Image URL" class="p-4 bg-gray-50 rounded-2xl outline-none border">
+                <input id="slUrl" type="text" placeholder="Redirect Link" class="p-4 bg-gray-50 rounded-2xl outline-none border">
+            </div>
+            <button onclick="updateSlider()" class="w-full mt-4 bg-black text-white p-4 rounded-2xl font-black">UPDATE SLIDER</button>
+        </div>
+
+        <div class="bg-white p-6 rounded-[30px] shadow-xl">
+            <h2 class="text-xs font-black text-gray-400 mb-4 uppercase">Add New Button (Grid or Sidebar)</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <input id="btnName" type="text" placeholder="Name" class="p-4 bg-gray-50 rounded-2xl border">
+                <input id="btnUrl" type="text" placeholder="Link" class="p-4 bg-gray-50 rounded-2xl border">
+                <select id="btnType" class="p-4 bg-gray-50 rounded-2xl font-bold">
+                    <option value="mini">Grid Button (4-Column)</option>
+                    <option value="sidebar">Sidebar Link</option>
+                </select>
+            </div>
+            <button onclick="addNewButton()" class="w-full bg-green-500 text-white p-4 rounded-2xl font-black">ADD BUTTON NOW</button>
+        </div>
+
+        <div class="bg-white p-6 rounded-[30px] shadow-xl">
+            <h2 class="text-xs font-black text-gray-400 mb-4 uppercase">Manage Existing Buttons</h2>
+            <div id="manageList" class="space-y-2"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, update, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
+            authDomain: "ind-club-v1.firebaseapp.com",
+            databaseURL: "https://ind-club-v1-default-rtdb.firebaseio.com",
+            projectId: "ind-club-v1",
+            storageBucket: "ind-club-v1.appspot.com",
+            messagingSenderId: "1043970059809",
+            appId: "1:1043970059809:web:f730b857ca3a76c061fd60"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.updateSlider = () => {
+            const img = document.getElementById('slImg').value;
+            const url = document.getElementById('slUrl').value;
+            update(ref(db, 'adminSettings'), { sliderImg: img, sliderLink: url });
+            alert("Slider Updated!");
+        };
+
+        window.addNewButton = () => {
+            const name = document.getElementById('btnName').value;
+            const url = document.getElementById('btnUrl').value;
+            const type = document.getElementById('btnType').value;
+            const path = type === 'mini' ? 'adminSettings/miniButtons' : 'adminSettings/sidebarLinks';
+            push(ref(db, path), { name, url });
+            alert("Added!");
+        };
+
+        onValue(ref(db, 'adminSettings'), (snap) => {
+            const list = document.getElementById('manageList');
+            list.innerHTML = "";
+            const data = snap.val();
+            
+            ['miniButtons', 'sidebarLinks'].forEach(type => {
+                if(data[type]) {
+                    Object.keys(data[type]).forEach(key => {
+                        const item = data[type][key];
+                        list.innerHTML += `
+                        <div class="flex justify-between items-center bg-gray-50 p-4 rounded-xl border">
+                            <span class="text-xs font-bold uppercase">${item.name} (${type})</span>
+                            <button onclick="delBtn('${type}/${key}')" class="text-red-500 font-bold">DELETE</button>
+                        </div>`;
+                    });
+                }
+            });
+        });
+
+        window.delBtn = (path) => {
+            if(confirm("Delete this?")) remove(ref(db, 'adminSettings/' + path));
+        };
+    </script>
+</body>
+</html>
