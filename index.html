@@ -3,179 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IND-CLUB | Access</title>
+    <title>IND-CLUB | Register</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        .glow-btn {
-            background-color: #22c55e;
-            color: white;
-            transition: 0.3s;
-            box-shadow: 0 0 15px rgba(34, 197, 94, 0.4);
-        }
-        .glow-btn:hover {
-            box-shadow: 0 0 25px rgba(34, 197, 94, 0.8);
-            transform: scale(1.02);
-        }
-        #chat-window { transition: 0.3s ease-in-out; }
+        .glow-btn { background: #22c55e; color: white; transition: 0.3s; box-shadow: 0 0 15px rgba(34,197,94,0.4); }
+        .glow-btn:hover { box-shadow: 0 0 25px rgba(34,197,94,0.8); transform: scale(1.02); }
     </style>
 </head>
-<body class="bg-white flex flex-col items-center justify-center min-h-screen p-6">
+<body class="bg-white flex items-center justify-center min-h-screen p-6">
 
-    <div class="w-full max-w-sm p-8 text-center bg-white rounded-3xl shadow-2xl border border-gray-100">
-        <h1 class="text-4xl font-black text-gray-900 mb-2 tracking-tighter">IND-CLUB</h1>
-        <p class="text-gray-400 mb-8 font-medium">One Device • One Account</p>
+    <div class="w-full max-w-sm p-8 text-center bg-white rounded-[40px] shadow-2xl border border-gray-50">
+        <h1 class="text-4xl font-black mb-2 tracking-tighter">CREATE ACCOUNT</h1>
+        <p class="text-gray-400 mb-8 font-medium">Join IND-CLUB Today</p>
 
-        <div class="space-y-4">
-            <input id="email" type="email" placeholder="Email Address" 
-                class="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-green-400 transition-all">
+        <div class="space-y-4 text-left">
+            <label class="text-xs font-bold text-gray-400 ml-2 uppercase">Email Address</label>
+            <input id="regEmail" type="email" placeholder="example@mail.com" class="w-full p-4 rounded-2xl bg-gray-50 border outline-none focus:border-green-400">
             
-            <input id="password" type="password" placeholder="Password" 
-                class="w-full p-4 rounded-2xl bg-gray-50 border border-gray-100 outline-none focus:border-green-400 transition-all">
+            <label class="text-xs font-bold text-gray-400 ml-2 uppercase">Set Password</label>
+            <input id="regPass" type="password" placeholder="••••••••" class="w-full p-4 rounded-2xl bg-gray-50 border outline-none focus:border-green-400">
             
-            <button onclick="handleAuth()" id="authBtn" class="w-full py-4 rounded-2xl font-bold text-lg glow-btn">
-                CONTINUE
-            </button>
+            <button onclick="handleRegister()" id="regBtn" class="w-full py-4 rounded-2xl font-bold text-lg glow-btn mt-4">REGISTER NOW</button>
         </div>
         
-        <p id="statusMsg" class="mt-6 text-sm font-semibold text-gray-500"></p>
-    </div>
-
-    <div id="chat-icon" onclick="toggleChat()" class="fixed bottom-5 right-5 bg-green-500 p-4 rounded-full shadow-lg cursor-pointer z-50 text-white glow-btn">
-        💬
-    </div>
-
-    <div id="chat-window" class="fixed bottom-20 right-5 w-80 bg-white shadow-2xl rounded-2xl border border-gray-200 hidden z-50 overflow-hidden flex flex-col">
-        <div class="bg-green-500 p-4 text-white font-bold flex justify-between items-center">
-            <span>Admin Support</span>
-            <button onclick="toggleChat()">✕</button>
-        </div>
-        <div id="chat-messages" class="h-64 p-4 overflow-y-auto space-y-2 text-sm bg-gray-50 flex flex-col">
-            </div>
-        <div class="p-2 border-t flex bg-white">
-            <input id="chatInput" type="text" placeholder="Type message..." class="w-full p-2 outline-none text-gray-800">
-            <button onclick="sendMsg()" class="bg-green-500 text-white px-4 py-1 rounded-lg font-bold">Send</button>
-        </div>
+        <p class="mt-6 text-sm">Already have an account? <a href="login.html" class="text-green-500 font-bold">Login</a></p>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, get, set, update, push, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
-            authDomain: "ind-club-v1.firebaseapp.com",
-            databaseURL: "https://ind-club-v1-default-rtdb.firebaseio.com",
-            projectId: "ind-club-v1",
-            storageBucket: "ind-club-v1.appspot.com",
-            messagingSenderId: "1043970059809",
-            appId: "1:1043970059809:web:f730b857ca3a76c061fd60"
-        };
-
+        const firebaseConfig = { /* APNA CONFIG YAHA DALO */ };
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // --- One Device Logic: Generate/Get Device ID ---
         let deviceId = localStorage.getItem('ind_club_device_id');
         if (!deviceId) {
             deviceId = 'DEV-' + Math.random().toString(36).substr(2, 9).toUpperCase();
             localStorage.setItem('ind_club_device_id', deviceId);
         }
 
-        // --- Auth Function (Sign-in & Sign-up Combined) ---
-        window.handleAuth = async () => {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const msg = document.getElementById('statusMsg');
-            const btn = document.getElementById('authBtn');
-
-            if(!email || !password) return alert("Please fill all details");
-
-            btn.disabled = true;
-            msg.innerText = "Processing...";
+        window.handleRegister = async () => {
+            const email = document.getElementById('regEmail').value;
+            const pass = document.getElementById('regPass').value;
+            if(!email || !pass) return alert("Fill all details");
 
             try {
-                // Pehle Login ki koshish karein
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                validateUser(userCredential.user);
-            } catch (error) {
-                // Agar account nahi hai, toh Register karein
-                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
-                    try {
-                        const newUser = await createUserWithEmailAndPassword(auth, email, password);
-                        await set(ref(db, 'users/' + newUser.user.uid), {
-                            email: email,
-                            status: "active",
-                            balance: 0,
-                            registeredDevice: deviceId // First device lock
-                        });
-                        alert("Account Created Successfully!");
-                        msg.innerText = "Welcome to IND-CLUB!";
-                    } catch (regError) {
-                        alert(regError.message);
-                        btn.disabled = false;
-                    }
-                } else {
-                    alert(error.message);
-                    btn.disabled = false;
-                }
-            }
+                const res = await createUserWithEmailAndPassword(auth, email, pass);
+                await set(ref(db, 'users/' + res.user.uid), {
+                    email: email,
+                    status: "active",
+                    balance: 0,
+                    registeredDevice: deviceId,
+                    joinDate: new Date().toLocaleDateString()
+                });
+                alert("Registration Successful!");
+                window.location.href = "dashboard.html";
+            } catch (err) { alert(err.message); }
         };
-
-        async function validateUser(user) {
-            const snap = await get(ref(db, 'users/' + user.uid));
-            if (snap.exists()) {
-                const data = snap.val();
-                
-                // 1. Check if Banned
-                if (data.status === 'banned') {
-                    alert("🚫 Your account is BANNED by Admin.");
-                    auth.signOut();
-                    location.reload();
-                    return;
-                }
-
-                // 2. Check One Device Policy
-                if (data.registeredDevice && data.registeredDevice !== deviceId) {
-                    alert("❌ Device mismatch! You can only use your first device.");
-                    auth.signOut();
-                    location.reload();
-                    return;
-                }
-
-                alert("Login Successful!");
-                document.getElementById('statusMsg').innerText = "Logged in as: " + data.email;
-            }
-        }
-
-        // --- Live Chat Logic ---
-        window.toggleChat = () => document.getElementById('chat-window').classList.toggle('hidden');
-
-        window.sendMsg = () => {
-            const text = document.getElementById('chatInput').value;
-            if(!text) return;
-            
-            push(ref(db, `chats/${deviceId}`), {
-                sender: 'user',
-                message: text,
-                timestamp: serverTimestamp()
-            });
-            document.getElementById('chatInput').value = "";
-        };
-
-        // Admin ke messages aur apne messages real-time mein load honge
-        onValue(ref(db, `chats/${deviceId}`), (snap) => {
-            const box = document.getElementById('chat-messages');
-            box.innerHTML = "";
-            snap.forEach(child => {
-                const d = child.val();
-                const style = d.sender === 'user' ? "bg-green-100 self-end text-right" : "bg-gray-200 self-start text-left";
-                box.innerHTML += `<div class="${style} p-2 px-3 rounded-2xl max-w-[80%] my-1 font-medium text-gray-700">${d.message}</div>`;
-            });
-            box.scrollTop = box.scrollHeight;
-        });
-
     </script>
 </body>
 </html>
