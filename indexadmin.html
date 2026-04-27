@@ -8,64 +8,68 @@
     <style>
         .glow-green { box-shadow: 0 0 15px rgba(34, 197, 94, 0.4); }
         .selected-chat { border-left: 5px solid #22c55e; background-color: #f0fdf4; }
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 10px; }
     </style>
 </head>
-<body class="bg-white min-h-screen p-4 md:p-10 text-gray-800">
+<body class="bg-white min-h-screen p-4 md:p-8 text-gray-800">
 
     <div class="max-w-7xl mx-auto">
-        <div class="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
-            <div>
-                <h1 class="text-4xl font-black tracking-tighter">MASTER ADMIN</h1>
-                <p class="text-gray-400 font-medium">Control users, devices, and live support</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="bg-white border border-gray-100 shadow-xl rounded-[30px] p-6 text-center">
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Users</p>
+                <h2 id="totalUsers" class="text-3xl font-black mt-1">0</h2>
             </div>
-            <div class="flex gap-4">
-                <div class="bg-gray-50 border p-5 px-8 rounded-3xl text-center shadow-sm">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Total Users</p>
-                    <p id="totalUsers" class="text-2xl font-black">0</p>
-                </div>
-                <div class="bg-gray-50 border p-5 px-8 rounded-3xl text-center shadow-sm">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Live Chats</p>
-                    <p id="activeChats" class="text-2xl font-black text-green-600">0</p>
-                </div>
+            <div class="bg-white border border-gray-100 shadow-xl rounded-[30px] p-6 text-center">
+                <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Chats</p>
+                <h2 id="activeChats" class="text-3xl font-black text-green-500 mt-1">0</h2>
+            </div>
+            <div class="bg-black rounded-[30px] p-6 text-center text-white">
+                <p class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Server Status</p>
+                <h2 class="text-xl font-black mt-1 text-green-400 animate-pulse">ONLINE</h2>
             </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
             
-            <div class="lg:col-span-2 bg-white rounded-3xl border border-gray-100 shadow-2xl p-6">
-                <h2 class="text-xl font-bold mb-6 flex items-center gap-2">
-                    <span class="w-2 h-6 bg-green-500 rounded-full"></span> Registered Users
-                </h2>
+            <div class="lg:col-span-2 bg-white rounded-[35px] border border-gray-50 shadow-2xl p-6 md:p-8">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-black tracking-tight">User Database</h2>
+                    <span class="text-[10px] bg-gray-100 px-3 py-1 rounded-full font-bold">REAL-TIME</span>
+                </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left">
+                    <table class="w-full text-left border-separate border-spacing-y-2">
                         <thead>
-                            <tr class="text-gray-400 text-xs uppercase border-b">
-                                <th class="pb-4">User Details</th>
-                                <th class="pb-4 text-center">Account Status</th>
-                                <th class="pb-4 text-right">Settings</th>
+                            <tr class="text-gray-400 text-[10px] uppercase tracking-widest font-bold">
+                                <th class="px-2">User / Device Info</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-right px-2">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="userTable" class="divide-y divide-gray-50">
+                        <tbody id="userTable">
                             </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="bg-white rounded-3xl border border-gray-100 shadow-2xl flex flex-col h-[650px] overflow-hidden">
-                <div class="p-6 border-b bg-gray-50">
-                    <h2 class="text-lg font-bold">Live Support Inbox</h2>
+            <div class="bg-white rounded-[35px] border border-gray-50 shadow-2xl flex flex-col h-[650px] overflow-hidden">
+                <div class="p-6 border-b bg-gray-50/50">
+                    <h2 class="text-xl font-black tracking-tight">Live Support</h2>
                 </div>
                 
-                <div id="inbox" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50">
-                    <p class="text-center text-gray-400 text-sm mt-10">Waiting for messages...</p>
+                <div id="inbox" class="flex-1 overflow-y-auto p-4 space-y-3 bg-gray-50/30">
+                    <p class="text-center text-gray-400 text-xs mt-20">Waiting for user messages...</p>
                 </div>
 
                 <div id="replyArea" class="p-5 bg-white border-t hidden">
-                    <p id="chattingWith" class="text-[10px] font-black text-green-600 mb-2 uppercase"></p>
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="w-2 h-2 bg-green-500 rounded-full animate-ping"></span>
+                        <p id="chattingWith" class="text-[10px] font-black text-gray-400 uppercase"></p>
+                    </div>
                     <div class="flex gap-2">
-                        <input id="replyInput" type="text" placeholder="Type your reply..." 
-                            class="flex-1 bg-gray-100 p-3 rounded-2xl outline-none border focus:border-green-400 transition-all">
-                        <button onclick="sendReply()" class="bg-green-500 text-white px-6 rounded-2xl font-bold glow-green">REPLY</button>
+                        <input id="replyInput" type="text" placeholder="Type message..." 
+                            class="flex-1 bg-gray-100 p-4 rounded-2xl outline-none border border-transparent focus:border-green-400 transition-all text-sm">
+                        <button onclick="sendReply()" class="bg-green-500 text-white px-6 rounded-2xl font-bold glow-green">SEND</button>
                     </div>
                 </div>
             </div>
@@ -77,7 +81,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Firebase Configuration
+        // CONFIGURATION: Replace with your Firebase settings
         const firebaseConfig = {
             apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
             authDomain: "ind-club-v1.firebaseapp.com",
@@ -90,90 +94,89 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
-        let selectedDevice = "";
+        let activeDeviceID = "";
 
-        // --- 1. Load User List & Stats ---
+        // --- 1. USER MANAGEMENT LOGIC ---
         onValue(ref(db, 'users'), (snapshot) => {
             const table = document.getElementById('userTable');
-            let count = 0;
+            let uCount = 0;
             table.innerHTML = "";
 
             snapshot.forEach(child => {
                 const uid = child.key;
                 const u = child.val();
-                count++;
+                uCount++;
 
-                const statusStyle = u.status === 'active' ? 'text-green-600 bg-green-50' : 'text-red-600 bg-red-50';
+                const statusColor = u.status === 'active' ? 'text-green-500 bg-green-50' : 'text-red-500 bg-red-50';
 
                 table.innerHTML += `
-                    <tr class="hover:bg-gray-50 transition">
-                        <td class="py-5">
-                            <p class="font-black text-sm">${u.email}</p>
-                            <p class="text-[10px] text-gray-400 font-mono tracking-tight">${u.registeredDevice || 'NOT REGISTERED'}</p>
+                    <tr class="bg-gray-50/50 hover:bg-gray-100 transition-all">
+                        <td class="p-4 rounded-l-2xl">
+                            <p class="font-black text-sm text-gray-800">${u.email}</p>
+                            <p class="text-[10px] text-gray-400 font-mono">${u.registeredDevice || 'NO DEVICE LOCKED'}</p>
                         </td>
                         <td class="text-center">
-                            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase ${statusStyle}">${u.status}</span>
+                            <span class="px-4 py-1 rounded-full text-[10px] font-black uppercase ${statusColor}">${u.status}</span>
                         </td>
-                        <td class="text-right space-x-1">
-                            <button onclick="updateStatus('${uid}', 'active')" class="text-[10px] font-bold text-green-500 hover:bg-green-50 px-2 py-1 rounded">UNBAN</button>
-                            <button onclick="updateStatus('${uid}', 'banned')" class="text-[10px] font-bold text-red-400 hover:bg-red-50 px-2 py-1 rounded">BAN</button>
-                            <button onclick="resetDevice('${uid}')" class="bg-black text-white px-3 py-1 rounded-xl text-[10px] font-bold ml-2">RESET DEVICE</button>
+                        <td class="text-right p-4 rounded-r-2xl space-x-1">
+                            <button onclick="setStatus('${uid}', 'active')" class="text-[10px] font-bold text-green-600 p-2 hover:bg-green-100 rounded-lg">ACTIVE</button>
+                            <button onclick="setStatus('${uid}', 'banned')" class="text-[10px] font-bold text-red-400 p-2 hover:bg-red-100 rounded-lg">BAN</button>
+                            <button onclick="resetDevice('${uid}')" class="bg-gray-800 text-white px-4 py-2 rounded-xl text-[10px] font-black ml-2 transition-transform hover:scale-105">RESET DEVICE</button>
                         </td>
                     </tr>
                 `;
             });
-            document.getElementById('totalUsers').innerText = count;
+            document.getElementById('totalUsers').innerText = uCount;
         });
 
-        // --- 2. Action Functions ---
-        window.updateStatus = (uid, s) => update(ref(db, `users/${uid}`), { status: s });
+        // ACTIONS
+        window.setStatus = (uid, s) => update(ref(db, `users/${uid}`), { status: s });
         window.resetDevice = (uid) => {
-            if(confirm("Force user to re-register their device?")) {
+            if(confirm("Warning: This will allow the user to link a new device. Continue?")) {
                 update(ref(db, `users/${uid}`), { registeredDevice: null });
-                alert("Device ID Reset Successfully!");
             }
         };
 
-        // --- 3. Live Chat Management ---
+        // --- 2. LIVE CHAT MANAGEMENT ---
         onValue(ref(db, 'chats'), (snapshot) => {
             const inbox = document.getElementById('inbox');
-            let chatCount = 0;
+            let cCount = 0;
             inbox.innerHTML = "";
-            
+
             snapshot.forEach(child => {
-                chatCount++;
+                cCount++;
                 const devID = child.key;
                 const messages = Object.values(child.val());
-                const last = messages[messages.length - 1];
+                const lastMsg = messages[messages.length - 1];
 
                 const chatItem = document.createElement('div');
-                chatItem.className = `p-4 rounded-2xl cursor-pointer border transition-all hover:bg-white mb-2 ${selectedDevice === devID ? 'selected-chat shadow-md bg-white' : 'bg-white/50'}`;
+                chatItem.className = `p-4 rounded-[20px] cursor-pointer border-2 transition-all hover:bg-white mb-2 ${activeDeviceID === devID ? 'selected-chat shadow-xl bg-white border-green-100' : 'bg-white/70 border-transparent'}`;
                 chatItem.innerHTML = `
                     <div class="flex justify-between items-center mb-1">
-                        <p class="text-[10px] font-black text-gray-400 uppercase">${devID}</p>
-                        <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                        <p class="text-[9px] font-black text-gray-400 uppercase tracking-tighter">${devID}</p>
+                        <span class="w-2 h-2 ${lastMsg.sender === 'user' ? 'bg-green-500 animate-pulse' : 'bg-gray-300'} rounded-full"></span>
                     </div>
-                    <p class="text-sm truncate font-medium text-gray-700">${last.message}</p>
+                    <p class="text-sm truncate font-bold text-gray-600">${lastMsg.message}</p>
                 `;
                 chatItem.onclick = () => {
-                    selectedDevice = devID;
+                    activeDeviceID = devID;
                     document.getElementById('replyArea').classList.remove('hidden');
-                    document.getElementById('chattingWith').innerText = "Target: " + devID;
-                    // Refresh highlighting
-                    document.querySelectorAll('#inbox div').forEach(el => el.classList.remove('selected-chat'));
-                    chatItem.classList.add('selected-chat');
+                    document.getElementById('chattingWith').innerText = "Device: " + devID;
+                    // Refresh view
+                    document.querySelectorAll('#inbox div').forEach(el => el.classList.remove('selected-chat', 'shadow-xl'));
+                    chatItem.classList.add('selected-chat', 'shadow-xl');
                 };
                 inbox.appendChild(chatItem);
             });
-            document.getElementById('activeChats').innerText = chatCount;
+            document.getElementById('activeChats').innerText = cCount;
         });
 
-        // --- 4. Send Reply to User ---
+        // SEND REPLY
         window.sendReply = () => {
             const input = document.getElementById('replyInput');
-            if(!input.value || !selectedDevice) return;
+            if(!input.value || !activeDeviceID) return;
 
-            push(ref(db, `chats/${selectedDevice}`), {
+            push(ref(db, `chats/${activeDeviceID}`), {
                 sender: 'admin',
                 message: input.value,
                 timestamp: serverTimestamp()
