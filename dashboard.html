@@ -1,67 +1,85 @@
 <!DOCTYPE html>
-<html lang="hi">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IND-CLUB | User Dashboard</title>
+    <title>IND-CLUB | Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
     <style>
-        :root { --bg: #ffffff; --text: #000000; --card: #f8fafc; }
-        .dark-mode { --bg: #0f172a; --text: #ffffff; --card: #1e293b; }
+        :root { --bg: #ffffff; --text: #000000; --card: #f8fafc; --border: #e2e8f0; }
+        .dark-mode { --bg: #0f172a; --text: #ffffff; --card: #1e293b; --border: #334155; }
         body { background-color: var(--bg); color: var(--text); transition: 0.3s; font-family: sans-serif; overflow-x: hidden; }
-        .card-ui { background-color: var(--card); border: 1px solid rgba(0,0,0,0.1); }
-        .glow-green { box-shadow: 0 0 15px rgba(34, 197, 94, 0.4); }
+        
+        /* Sidebar Styling */
         .sidebar { transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        
+        /* Slider Styling */
+        .swiper { width: 100%; height: 210px; border-radius: 35px; box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+        .swiper-slide img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Glow Effect for Buttons */
+        .glow-green { box-shadow: 0 0 20px rgba(34, 197, 94, 0.4); }
+        .card-ui { background-color: var(--card); border: 1px solid var(--border); }
     </style>
 </head>
-<body class="min-h-screen flex">
+<body class="flex">
 
-    <div id="sidebar" class="sidebar fixed left-0 top-0 h-full w-72 bg-white dark:bg-slate-900 border-r shadow-2xl z-50 -translate-x-full lg:translate-x-0 p-6">
-        <h2 class="text-3xl font-black text-green-500 mb-8 italic">IND-CLUB</h2>
-        <nav class="space-y-2" id="sidebarLinks"></nav>
-        <button onclick="toggleSidebar()" class="lg:hidden mt-10 w-full p-4 bg-gray-100 rounded-2xl font-bold">CLOSE</button>
+    <div id="sidebar" class="sidebar fixed left-0 top-0 h-full w-72 bg-white dark:bg-slate-900 border-r shadow-2xl z-50 -translate-x-full lg:translate-x-0 p-6 flex flex-col">
+        <div class="flex justify-between items-center mb-10">
+            <h2 class="text-3xl font-black text-green-500 italic">IND-CLUB</h2>
+            <button onclick="toggleSidebar()" class="lg:hidden text-2xl">✕</button>
+        </div>
+        
+        <nav class="space-y-3 flex-1 overflow-y-auto" id="sidebarLinks">
+            </nav>
+
+        <div class="mt-auto pt-6 border-t">
+            <button onclick="toggleTheme()" class="w-full p-4 card-ui rounded-2xl font-bold">🌓 Toggle Mode</button>
+        </div>
     </div>
 
-    <div class="flex-1 lg:ml-72 p-4 md:p-10">
-        <div class="flex justify-between items-center mb-6">
-            <button onclick="toggleSidebar()" class="lg:hidden p-3 card-ui rounded-2xl">☰</button>
-            <div class="text-right">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Available Balance</p>
-                <h2 class="text-2xl font-black text-green-500">₹<span id="uBalance">0.00</span></h2>
+    <div class="flex-1 lg:ml-72 p-4 md:p-10 min-h-screen">
+        
+        <div class="flex justify-between items-center mb-8">
+            <button onclick="toggleSidebar()" class="lg:hidden p-4 card-ui rounded-[20px] shadow-sm">☰</button>
+            <div class="flex items-center gap-4">
+                <div class="text-right">
+                    <p class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Your Balance</p>
+                    <h2 class="text-2xl font-black text-green-500 italic">₹<span id="uBalance">0.00</span></h2>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center text-xl">👤</div>
             </div>
-            <button onclick="toggleTheme()" class="p-3 card-ui rounded-full">🌓</button>
         </div>
 
-        <div class="w-full h-44 md:h-80 rounded-[35px] overflow-hidden mb-8 shadow-xl relative">
-            <a id="sLink" href="#"><img id="sImg" src="" style="width:100%; height:100%; object-fit:cover;"></a>
+        <div class="swiper mySwiper mb-10">
+            <div class="swiper-wrapper" id="sliderWrapper">
+                </div>
+            <div class="swiper-pagination"></div>
         </div>
 
-        <div class="grid grid-cols-2 gap-4 mb-8">
-            <a href="deposit.html" class="bg-green-500 text-white p-6 rounded-[30px] font-black text-center glow-green">DEPOSIT</a>
-            <a href="withdraw.html" class="bg-black text-white p-6 rounded-[30px] font-black text-center shadow-lg">WITHDRAW</a>
+        <div class="grid grid-cols-2 gap-5 mb-10">
+            <a href="deposit.html" class="bg-green-500 text-white p-6 rounded-[35px] font-black text-center text-xl italic glow-green transform active:scale-95 transition">
+                DEPOSIT
+            </a>
+            <a href="withdraw.html" class="bg-black text-white p-6 rounded-[35px] font-black text-center text-xl italic shadow-xl transform active:scale-95 transition">
+                WITHDRAW
+            </a>
         </div>
 
-        <div id="miniGrid" class="grid grid-cols-4 gap-3 mb-12"></div>
+        <h3 class="text-[10px] font-black text-gray-400 uppercase mb-4 tracking-widest px-2">Popular Services</h3>
+        <div id="miniGrid" class="grid grid-cols-4 gap-3 md:grid-cols-6 lg:grid-cols-8 mb-20">
+            </div>
+
     </div>
 
-    <div onclick="toggleChat()" class="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-2xl cursor-pointer z-50">💬</div>
-    <div id="chatBox" class="fixed bottom-24 right-6 w-80 bg-white dark:bg-slate-800 rounded-[30px] shadow-2xl border hidden z-50 flex flex-col overflow-hidden">
-        <div class="bg-green-500 p-4 text-white font-bold flex justify-between">
-            <span class="text-xs uppercase" id="uMailLabel">Support</span>
-            <button onclick="toggleChat()">✕</button>
-        </div>
-        <div id="msgBox" class="h-64 overflow-y-auto p-4 flex flex-col gap-2 bg-gray-50 dark:bg-slate-900"></div>
-        <div class="p-3 border-t flex gap-2">
-            <input id="chatInp" type="text" placeholder="Type..." class="w-full p-2 bg-gray-100 rounded-xl outline-none text-black">
-            <button onclick="sendChat()" class="bg-green-500 text-white px-4 rounded-xl font-bold">></button>
-        </div>
-    </div>
-
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getDatabase, ref, onValue, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+        // Aapka Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
             authDomain: "ind-club-v1.firebaseapp.com",
@@ -75,52 +93,70 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getDatabase(app);
-        let userEmail = "";
 
+        // Auth Check & Balance Fetch
         onAuthStateChanged(auth, (user) => {
-            if(!user) window.location.href = "login.html";
-            userEmail = user.email;
-            document.getElementById('uMailLabel').innerText = userEmail;
-            onValue(ref(db, 'users/' + user.uid), s => { document.getElementById('uBalance').innerText = s.val()?.balance || "0.00"; });
-            loadChat();
-        });
-
-        window.toggleTheme = () => document.body.classList.toggle('dark-mode');
-        window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('-translate-x-full');
-        window.toggleChat = () => document.getElementById('chatBox').classList.toggle('hidden');
-
-        onValue(ref(db, 'adminSettings'), s => {
-            const d = s.val(); if(!d) return;
-            document.getElementById('sImg').src = d.sliderImg;
-            document.getElementById('sLink').href = d.sliderLink || "#";
-            
-            const gl = document.getElementById('miniGrid'); gl.innerHTML = "";
-            if(d.miniButtons) Object.values(d.miniButtons).forEach(b => {
-                gl.innerHTML += `<a href="${b.url}" class="card-ui p-2 text-center rounded-2xl"><div class="text-xl mb-1">🔘</div><span class="text-[9px] font-black uppercase truncate block w-full">${b.name}</span></a>`;
-            });
-
-            const sl = document.getElementById('sidebarLinks'); sl.innerHTML = "";
-            if(d.sidebarLinks) Object.values(d.sidebarLinks).forEach(l => {
-                sl.innerHTML += `<a href="${l.url}" class="block p-4 font-bold card-ui rounded-xl mb-2 hover:bg-green-500 hover:text-white transition uppercase text-[10px]">${l.name}</a>`;
-            });
-        });
-
-        window.sendChat = () => {
-            const val = document.getElementById('chatInp').value; if(!val) return;
-            push(ref(db, `chats/${userEmail.replace(/\./g, '_')}`), { sender: userEmail, message: val, timestamp: serverTimestamp() });
-            document.getElementById('chatInp').value = "";
-        };
-
-        function loadChat() {
-            onValue(ref(db, `chats/${userEmail.replace(/\./g, '_')}`), s => {
-                const box = document.getElementById('msgBox'); box.innerHTML = "";
-                s.forEach(m => {
-                    const d = m.val(); const isMe = d.sender === userEmail;
-                    box.innerHTML += `<div class="${isMe ? 'self-end bg-green-500 text-white':'self-start bg-gray-200 text-black'} p-2 px-3 rounded-2xl text-[11px] font-bold max-w-[80%]">${d.message}</div>`;
+            if(!user) {
+                window.location.href = "login.html";
+            } else {
+                onValue(ref(db, 'users/' + user.uid), (snap) => {
+                    document.getElementById('uBalance').innerText = snap.val()?.balance || "0.00";
                 });
-                box.scrollTop = box.scrollHeight;
+            }
+        });
+
+        // UI Functions
+        window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        window.toggleTheme = () => document.body.classList.toggle('dark-mode');
+
+        // --- FETCH ADMIN DATA (Slider, Sidebar, Grid) ---
+        onValue(ref(db, 'adminSettings'), (snap) => {
+            const data = snap.val();
+            if(!data) return;
+
+            // 1. Slider Load
+            const swrapper = document.getElementById('sliderWrapper');
+            swrapper.innerHTML = "";
+            if(data.sliders) {
+                Object.values(data.sliders).forEach(s => {
+                    swrapper.innerHTML += `
+                        <div class="swiper-slide">
+                            <a href="${s.link}"><img src="${s.img}"></a>
+                        </div>`;
+                });
+            }
+            // Re-init Swiper after data load
+            new Swiper(".mySwiper", {
+                loop: true,
+                pagination: { el: ".swiper-pagination", clickable: true },
+                autoplay: { delay: 3000, disableOnInteraction: false },
             });
-        }
+
+            // 2. Sidebar Links Load
+            const snav = document.getElementById('sidebarLinks');
+            snav.innerHTML = "";
+            if(data.sidebarLinks) {
+                Object.values(data.sidebarLinks).forEach(link => {
+                    snav.innerHTML += `
+                        <a href="${link.url}" class="block p-4 font-black card-ui rounded-2xl hover:bg-green-500 hover:text-white transition uppercase text-[11px] tracking-wider">
+                            ${link.name}
+                        </a>`;
+                });
+            }
+
+            // 3. Grid Buttons Load (4-Column)
+            const gnav = document.getElementById('miniGrid');
+            gnav.innerHTML = "";
+            if(data.miniButtons) {
+                Object.values(data.miniButtons).forEach(btn => {
+                    gnav.innerHTML += `
+                        <a href="${btn.url}" class="card-ui p-3 py-5 flex flex-col items-center justify-center rounded-[25px] hover:border-green-500 transition active:scale-90">
+                            <span class="text-2xl mb-2">🎮</span>
+                            <span class="text-[9px] font-black uppercase text-center truncate w-full">${btn.name}</span>
+                        </a>`;
+                });
+            }
+        });
     </script>
 </body>
 </html>
