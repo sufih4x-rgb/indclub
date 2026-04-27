@@ -3,147 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Refer & Earn | IND-CLUB</title>
+    <title>Refer | IND-CLUB</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { background: white; font-family: sans-serif; color: #1a1a1a; }
-        .glow-card { 
-            box-shadow: 0 10px 40px rgba(34, 197, 94, 0.1); 
-            border: 1px solid #f0f0f0; 
-        }
-        .milestone-glow { 
-            box-shadow: 0 0 15px rgba(34, 197, 94, 0.3); 
-        }
-        .copy-btn {
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-            border: 2px solid #000;
-        }
-    </style>
 </head>
-<body class="p-6 md:p-12">
-
+<body class="bg-white p-6">
     <div class="max-w-md mx-auto space-y-8">
-        <div class="text-center">
-            <h1 class="text-4xl font-black italic tracking-tighter uppercase">Refer & Earn</h1>
-            <p class="text-gray-400 text-xs font-bold mt-2 uppercase tracking-widest">Invite friends & get big rewards</p>
+        <h1 class="text-3xl font-black italic uppercase">Refer & Earn</h1>
+        
+        <div class="bg-slate-900 text-white p-8 rounded-[40px] shadow-2xl">
+            <p class="text-[10px] font-bold text-gray-400 uppercase">Referral Link</p>
+            <p id="refLink" class="text-xs break-all mt-2 font-mono text-green-400">Loading...</p>
+            <button onclick="copyLink()" class="mt-6 w-full bg-white text-black p-4 rounded-2xl font-black">COPY LINK</button>
         </div>
 
-        <div class="bg-white p-8 rounded-[40px] glow-card border text-center space-y-4">
-            <p class="text-[10px] font-black text-gray-400 uppercase">Your Unique Referral Link</p>
-            <div class="bg-gray-50 p-4 rounded-2xl border border-dashed border-gray-300 break-all text-sm font-mono" id="refLink">
-                Loading link...
+        <div class="space-y-4">
+            <h3 class="text-xs font-black text-gray-400 uppercase">Milestones</h3>
+            <div id="m1" class="p-6 border rounded-[30px] flex justify-between items-center">
+                <span>1 Friend Deposit</span>
+                <span id="amt1" class="font-black text-green-500">₹--</span>
             </div>
-            <button onclick="copyLink()" class="w-full bg-black text-white p-5 rounded-3xl font-black text-lg copy-btn active:scale-95 transition">
-                COPY LINK
-            </button>
-        </div>
-
-        <div class="space-y-6">
-            <h3 class="text-xs font-black text-gray-400 uppercase ml-2">Your Milestones</h3>
-            
-            <div class="grid grid-cols-2 gap-4">
-                <div class="bg-white p-6 rounded-[30px] border glow-card text-center">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase">Total Referrals</p>
-                    <h2 class="text-3xl font-black italic text-green-500" id="totalRefs">0</h2>
-                </div>
-                <div class="bg-white p-6 rounded-[30px] border glow-card text-center">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase">Total Earned</p>
-                    <h2 class="text-3xl font-black italic text-black">₹<span id="totalEarned">0</span></h2>
-                </div>
+            <div id="m10" class="p-6 border rounded-[30px] flex justify-between items-center">
+                <span>10 Friends Deposit</span>
+                <span id="amt10" class="font-black text-green-500">₹--</span>
             </div>
-
-            <div class="space-y-3" id="milestoneList">
-                <div class="flex items-center justify-between p-6 bg-white rounded-[30px] border milestone-glow">
-                    <div>
-                        <p class="font-black text-sm italic uppercase">1 Referral</p>
-                        <p class="text-[10px] text-gray-400 font-bold">Reward: ₹50</p>
-                    </div>
-                    <div id="m1_status" class="text-[10px] font-black px-4 py-2 rounded-full bg-gray-100 text-gray-400 uppercase">Locked</div>
-                </div>
-
-                <div class="flex items-center justify-between p-6 bg-white rounded-[30px] border">
-                    <div>
-                        <p class="font-black text-sm italic uppercase">10 Referrals</p>
-                        <p class="text-[10px] text-gray-400 font-bold">Reward: ₹500</p>
-                    </div>
-                    <div id="m10_status" class="text-[10px] font-black px-4 py-2 rounded-full bg-gray-100 text-gray-400 uppercase">Locked</div>
-                </div>
-
-                <div class="flex items-center justify-between p-6 bg-white rounded-[30px] border">
-                    <div>
-                        <p class="font-black text-sm italic uppercase">25 Referrals</p>
-                        <p class="text-[10px] text-gray-400 font-bold">Reward: ₹1500</p>
-                    </div>
-                    <div id="m25_status" class="text-[10px] font-black px-4 py-2 rounded-full bg-gray-100 text-gray-400 uppercase">Locked</div>
-                </div>
+            <div id="m25" class="p-6 border rounded-[30px] flex justify-between items-center">
+                <span>25 Friends Deposit</span>
+                <span id="amt25" class="font-black text-green-500">₹--</span>
             </div>
-        </div>
-
-        <div class="p-6 bg-gray-50 rounded-[35px] text-xs space-y-2">
-            <p class="font-black uppercase mb-2">How it works:</p>
-            <p>1. Copy your link and send it to your friends.</p>
-            <p>2. They must sign up and complete their <b>First Deposit</b>.</p>
-            <p>3. Once they deposit, your referral count increases and you get rewards.</p>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
-            authDomain: "ind-club-v1.firebaseapp.com",
-            databaseURL: "https://ind-club-v1-default-rtdb.firebaseio.com",
-            projectId: "ind-club-v1",
-            storageBucket: "ind-club-v1.appspot.com",
-            messagingSenderId: "1043970059809",
-            appId: "1:1043970059809:web:f730b857ca3a76c061fd60"
-        };
-
+        const firebaseConfig = { /* Same Config */ };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                const myUid = user.uid;
-                const shareLink = window.location.origin + "/signup.html?ref=" + myUid;
-                document.getElementById('refLink').innerText = shareLink;
-
-                // Load User Data for Stats
-                onValue(ref(db, 'users/' + myUid), (snap) => {
-                    const data = snap.val();
-                    const count = data?.refCount || 0;
-                    document.getElementById('totalRefs').innerText = count;
-                    
-                    // Update Milestone Status UI
-                    updateMilestone(count, 1, 'm1_status', 50);
-                    updateMilestone(count, 10, 'm10_status', 500);
-                    updateMilestone(count, 25, 'm25_status', 1500);
-                });
-            } else {
-                window.location.href = "login.html";
+        // Fetch Dynamic Milestone Rewards from Admin
+        onValue(ref(db, 'adminSettings/referralRewards'), (snap) => {
+            const r = snap.val();
+            if(r) {
+                document.getElementById('amt1').innerText = "₹" + r.m1;
+                document.getElementById('amt10').innerText = "₹" + r.m10;
+                document.getElementById('amt25').innerText = "₹" + r.m25;
             }
         });
 
-        function updateMilestone(count, target, elementId, reward) {
-            const el = document.getElementById(elementId);
-            if (count >= target) {
-                el.innerText = "Completed ✅";
-                el.classList.remove('bg-gray-100', 'text-gray-400');
-                el.classList.add('bg-green-100', 'text-green-600');
-            } else {
-                el.innerText = `Need ${target - count} more`;
-            }
-        }
+        // Set Link
+        onAuthStateChanged(auth, (u) => {
+            if(u) document.getElementById('refLink').innerText = window.location.origin + "/signup.html?ref=" + u.uid;
+        });
 
         window.copyLink = () => {
-            const link = document.getElementById('refLink').innerText;
-            navigator.clipboard.writeText(link).then(() => {
-                alert("Referral link copied to clipboard!");
-            });
+            navigator.clipboard.writeText(document.getElementById('refLink').innerText);
+            alert("Copied!");
         };
     </script>
 </body>
