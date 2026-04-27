@@ -3,62 +3,127 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Withdraw | IND-CLUB</title>
+    <title>Withdrawal Admin | IND-CLUB</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 p-6">
-    <div class="max-w-4xl mx-auto space-y-6">
-        <h1 class="text-3xl font-black italic">WITHDRAWAL REQUESTS</h1>
-        <div id="adminList" class="space-y-4"></div>
+<body class="bg-slate-50 p-4 md:p-10">
+    <div class="max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-black italic uppercase">Withdraw Requests</h1>
+            <div id="stats" class="text-right">
+                <p class="text-[10px] font-bold text-gray-400 uppercase">Pending Tasks</p>
+                <p id="pendingCount" class="text-2xl font-black text-red-500">0</p>
+            </div>
+        </div>
+
+        <div id="adminList" class="space-y-4">
+            <p class="text-center text-gray-400 py-10 font-bold">Loading requests...</p>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, onValue, update, runTransaction, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const firebaseConfig = { /* Same as above */ };
+        // Same Config as your Withdraw Page
+        const firebaseConfig = {
+            apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
+            authDomain: "ind-club-v1.firebaseapp.com",
+            databaseURL: "https://ind-club-v1-default-rtdb.firebaseio.com",
+            projectId: "ind-club-v1",
+            storageBucket: "ind-club-v1.appspot.com",
+            messagingSenderId: "1043970059809",
+            appId: "1:1043970059809:web:f730b857ca3a76c061fd60"
+        };
+
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        onValue(ref(db, 'withdrawRequests'), snap => {
-            const list = document.getElementById('adminList'); list.innerHTML = "";
-            snap.forEach(c => {
-                const d = c.val();
-                if(d.status === 'pending') {
-                    const detailHtml = d.method === 'upi' ? 
-                        `<p class="text-blue-600 font-bold">UPI: ${d.details.upi}</p>` : 
-                        `<p class="text-blue-600 font-bold">ACC: ${d.details.acc} | IFSC: ${d.details.ifsc} | Name: ${d.details.name}</p>`;
+        // Fetch Requests
+        onValue(ref(db, 'withdrawRequests'), (snap) => {
+            const list = document.getElementById('adminList');
+            const countBox = document.getElementById('pendingCount');
+            list.innerHTML = "";
+            let count = 0;
+
+            if (!snap.exists()) {
+                list.innerHTML = `<p class="text-center text-gray-400 py-10 font-bold">No Withdrawal Requests Found</p>`;
+                countBox.innerText = 0;
+                return;
+            }
+
+            snap.forEach(child => {
+                const d = child.val();
+                if (d.status === 'pending') {
+                    count++;
+                    
+                    // Logic to show Bank or UPI details
+                    let detailHtml = "";
+                    if (d.method === 'upi') {
+                        detailHtml = `<p class="text-blue-600 font-bold bg-blue-50 p-2 rounded-lg mt-2">UPI: ${d.details.upi}</p>`;
+                    } else {
+                        detailHtml = `
+                            <div class="bg-gray-100 p-3 rounded-xl mt-2 text-xs space-y-1">
+                                <p><b>Acc:</b> ${d.details.acc}</p>
+                                <p><b>IFSC:</b> ${d.details.ifsc}</p>
+                                <p><b>Name:</b> ${d.details.name}</p>
+                            </div>`;
+                    }
 
                     list.innerHTML += `
-                    <div class="bg-white p-6 rounded-[30px] border shadow-sm">
-                        <div class="flex justify-between items-start mb-4">
+                    <div class="bg-white p-6 rounded-[30px] border shadow-sm transition hover:shadow-md">
+                        <div class="flex justify-between items-start mb-2">
                             <div>
-                                <h3 class="text-2xl font-black">₹${d.amount}</h3>
-                                <p class="text-xs text-gray-400">${d.email}</p>
+                                <h3 class="text-2xl font-black text-gray-800">₹${d.amount}</h3>
+                                <p class="text-[10px] text-gray-400 font-bold uppercase">${d.email}</p>
                             </div>
-                            <span class="bg-black text-white px-3 py-1 rounded-full text-[10px] font-bold uppercase">${d.method}</span>
+                            <span class="bg-black text-white px-3 py-1 rounded-full text-[9px] font-black uppercase">${d.method}</span>
                         </div>
+                        
                         ${detailHtml}
+
                         <div class="flex gap-3 mt-6">
-                            <button onclick="handle('${c.key}', '${d.uid}', ${d.amount}, 'approve')" class="flex-1 bg-green-500 text-white p-4 rounded-2xl font-black">APPROVE</button>
-                            <button onclick="handle('${c.key}', '${d.uid}', ${d.amount}, 'reject')" class="flex-1 bg-red-500 text-white p-4 rounded-2xl font-black">REJECT</button>
+                            <button onclick="processWithdraw('${child.key}', '${d.uid}', ${d.amount}, 'approve')" class="flex-1 bg-green-500 text-white py-3 rounded-2xl font-black text-sm shadow-lg shadow-green-100 active:scale-95 transition">APPROVE</button>
+                            <button onclick="processWithdraw('${child.key}', '${d.uid}', ${d.amount}, 'reject')" class="flex-1 bg-red-500 text-white py-3 rounded-2xl font-black text-sm shadow-lg shadow-red-100 active:scale-95 transition">REJECT</button>
                         </div>
                     </div>`;
                 }
             });
+            countBox.innerText = count;
+            if(count === 0) list.innerHTML = `<p class="text-center text-gray-400 py-10 font-bold">All caught up! No pending requests.</p>`;
         });
 
-        window.handle = async (key, uid, amt, action) => {
-            if(action === 'approve') {
-                // Balance Deduct logic (Double check if enough balance)
-                await runTransaction(ref(db, `users/${uid}/balance`), (curr) => {
-                    if(curr >= amt) return curr - amt;
-                    else return curr;
+        // Approve/Reject Action
+        window.processWithdraw = async (key, uid, amt, action) => {
+            if (action === 'approve') {
+                const confirmPay = confirm(`Confirm ₹${amt} payment to user? Balance will be deducted.`);
+                if (!confirmPay) return;
+
+                // 1. Transaction to safely deduct balance
+                const balanceRef = ref(db, `users/${uid}/balance`);
+                const result = await runTransaction(balanceRef, (current) => {
+                    if (current === null) return 0;
+                    if (current < amt) {
+                        alert("User has insufficient balance now!");
+                        return; // Abort
+                    }
+                    return current - amt;
                 });
-                update(ref(db, `withdrawRequests/${key}`), { status: 'approved' });
+
+                if (result.committed) {
+                    // 2. Update status to approved
+                    await update(ref(db, `withdrawRequests/${key}`), { status: 'approved' });
+                    alert("Withdrawal Approved & Balance Deducted!");
+                }
             } else {
                 const reason = prompt("Enter Rejection Reason:");
-                update(ref(db, `withdrawRequests/${key}`), { status: 'rejected', reason: reason });
+                if (reason === null) return;
+                
+                await update(ref(db, `withdrawRequests/${key}`), { 
+                    status: 'rejected', 
+                    reason: reason || "Data Mismatch" 
+                });
+                alert("Request Rejected.");
             }
         };
     </script>
