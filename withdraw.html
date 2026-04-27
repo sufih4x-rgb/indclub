@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdraw | IND-CLUB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { background: white; font-family: sans-serif; }
+        .glow-btn { box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); border: 2px solid #ef4444; }
+        .scanner-float { position: fixed; bottom: 30px; right: 20px; box-shadow: 0 0 20px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body class="p-6">
+    <div class="max-w-md mx-auto space-y-8">
+        <div class="flex justify-between items-center">
+            <h1 class="text-3xl font-black italic uppercase">Withdraw</h1>
+            <div class="bg-gray-100 p-3 px-5 rounded-2xl">
+                <p class="text-[10px] font-bold text-gray-400 uppercase">Balance</p>
+                <p class="text-xl font-black text-green-600">₹<span id="userBal">0</span></p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+            <button onclick="setMethod('upi')" id="btnUpi" class="p-4 rounded-2xl border-2 border-black font-black bg-black text-white">UPI</button>
+            <button onclick="setMethod('bank')" id="btnBank" class="p-4 rounded-2xl border-2 border-gray-200 font-black">BANK</button>
+        </div>
+
+        <div id="formArea" class="space-y-4 bg-gray-50 p-6 rounded-[35px]">
+            <input type="number" id="wAmt" placeholder="Enter Amount" class="w-full p-4 rounded-2xl border-none outline-none font-bold text-xl">
+            <div id="upiFields" class="space-y-4">
+                <input type="text" id="upiId" placeholder="example@upi" class="w-full p-4 rounded-2xl border-none outline-none font-bold">
+            </div>
+            <div id="bankFields" class="space-y-4 hidden">
+                <input type="text" id="accNum" placeholder="Account Number" class="w-full p-4 rounded-2xl border-none outline-none font-bold">
+                <input type="text" id="ifsc" placeholder="IFSC Code" class="w-full p-4 rounded-2xl border-none outline-none font-bold uppercase">
+                <input type="text" id="holder" placeholder="Account Holder Name" class="w-full p-4 rounded-2xl border-none outline-none font-bold">
+            </div>
+            <button onclick="requestWithdraw()" class="w-full bg-white text-red-500 p-5 rounded-2xl font-black text-lg glow-btn">WITHDRAW NOW</button>
+        </div>
+
+        <div>
+            <h3 class="text-xs font-black text-gray-400 uppercase mb-4">Last Withdrawals</h3>
+            <div id="history" class="space-y-2"></div>
+        </div>
+    </div>
+
+    <a href="scanner.html" class="scanner-float w-16 h-16 bg-black rounded-full flex items-center justify-center text-white text-2xl">
+        📷
+    </a>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, push, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
+            authDomain: "ind-club-v1.firebaseapp.com",
+            databaseURL: "https://ind-club-v1-default-rtdb.firebaseio.com",
+            projectId: "ind-club-v1",
+            storageBucket: "ind-club-v1.appspot.com",
+            messagingSenderId: "1043970059809",
+            appId: "1:1043970059809:web:f730b857ca3a76c061fd60"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const auth = getAuth(app);
+
+        let method = 'upi';
+        let currentBalance = 0;
+
+        window.setMethod = (m) => {
+            method = m;
+            document.getElementById('upiFields').classList.toggle('hidden', m !== 'upi');
+            document.getElementById('bankFields').classList.toggle('hidden', m !== 'bank');
+            document.getElementById('btnUpi').className = m === 'upi' ? 'p-4 rounded-2xl border-2 border-black font-black bg-black text-white' : 'p-4 rounded-2xl border-2 border-gray-200 font-black';
+            document.getElementById('btnBank').className = m === 'bank' ? 'p-4 rounded-2xl border-2 border-black font-black bg-black text-white' : 'p-4 rounded-2xl border-2 border-gray-200 font-black';
+        };
+
+        // Fetch Balance and History
+        auth.onAuthStateChanged(user => {
+            if(user) {
+                onValue(ref(db, `users/${user.uid}/balance`), snap => {
+                    currentBalance = snap.val() || 0;
+                    document.getElementById('userBal').innerText = currentBalance;
+                });
+
+                onValue(ref(db, 'withdrawRequests'), snap => {
+                    const list = document.getElementById('history'); list.innerHTML = "";
+                    snap.forEach(c => {
+                        if(c.val().uid === user.uid) {
+                            const d = c.val();
+                            list.innerHTML += `
+                                <div class="p-4 bg-white border rounded-2xl flex justify-between items-center">
+                                    <div>
+                                        <p class="font-black text-sm">₹${d.amount}</p>
+                                        <p class="text-[9px] text-gray-400 uppercase">${d.date}</p>
+                                    </div>
+                                    <span class="text-[10px] font-bold ${d.status === 'pending' ? 'text-yellow-500' : d.status === 'approved' ? 'text-green-500' : 'text-red-500'} uppercase">
+                                        ${d.status} ${d.reason ? '('+d.reason+')' : ''}
+                                    </span>
+                                </div>`;
+                        }
+                    });
+                });
+            }
+        });
+
+        window.requestWithdraw = () => {
+            const amt = Number(document.getElementById('wAmt').value);
+            if(amt > currentBalance) return alert("Insufficient Balance!");
+            if(amt < 100) return alert("Minimum Withdraw ₹100");
+
+            const details = method === 'upi' ? 
+                { upi: document.getElementById('upiId').value } : 
+                { acc: document.getElementById('accNum').value, ifsc: document.getElementById('ifsc').value, name: document.getElementById('holder').value };
+
+            const user = auth.currentUser;
+            push(ref(db, 'withdrawRequests'), {
+                uid: user.uid,
+                email: user.email,
+                amount: amt,
+                method: method,
+                details: details,
+                status: 'pending',
+                date: new Date().toLocaleDateString()
+            });
+            alert("Withdrawal Requested!");
+        };
+    </script>
+</body>
+</html>
