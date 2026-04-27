@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IND-CLUB | Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root { --bg: #ffffff; --text: #000000; --card: #f8fafc; --border: #e2e8f0; }
+        .dark-mode { --bg: #0f172a; --text: #ffffff; --card: #1e293b; --border: #334155; }
+        body { background-color: var(--bg); color: var(--text); transition: 0.3s; font-family: sans-serif; overflow-x: hidden; }
+        .card-ui { background-color: var(--card); border: 1px solid var(--border); }
+        .glow-green { box-shadow: 0 0 15px rgba(34, 197, 94, 0.4); }
+        .sidebar { transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .mini-grid-btn { aspect-ratio: 1/1; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 20px; transition: 0.2s; }
+        .mini-grid-btn:hover { transform: scale(1.05); border-color: #22c55e; }
+    </style>
+</head>
+<body>
+
+    <div id="sidebar" class="sidebar fixed left-0 top-0 h-full w-72 bg-white dark:bg-slate-900 border-r shadow-2xl z-50 -translate-x-full lg:translate-x-0 p-6">
+        <div class="flex justify-between items-center mb-8">
+            <h2 class="text-3xl font-black text-green-500 italic">IND-CLUB</h2>
+            <button onclick="toggleSidebar()" class="lg:hidden text-2xl">×</button>
+        </div>
+        <nav class="space-y-2" id="sidebarLinks"></nav>
+    </div>
+
+    <div class="flex-1 lg:ml-72 p-4 md:p-10">
+        <div class="flex justify-between items-center mb-6">
+            <button onclick="toggleSidebar()" class="lg:hidden p-3 card-ui rounded-2xl">☰</button>
+            <div class="flex items-center gap-3">
+                <div class="text-right mr-2">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase">Balance</p>
+                    <h2 class="text-xl font-black text-green-500">₹<span id="uBalance">0.00</span></h2>
+                </div>
+                <button onclick="toggleTheme()" class="p-3 card-ui rounded-full text-xl">🌓</button>
+            </div>
+        </div>
+
+        <div class="w-full h-44 md:h-80 rounded-[35px] overflow-hidden mb-8 shadow-xl relative group">
+            <a id="sliderLink" href="#"><img id="sliderImg" src="" class="w-full h-full object-cover"></a>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <button class="bg-green-500 text-white p-6 rounded-[30px] font-black text-xl glow-green italic">DEPOSIT</button>
+            <button class="bg-black text-white p-6 rounded-[30px] font-black text-xl glow-green italic">WITHDRAW</button>
+        </div>
+
+        <div id="miniGrid" class="grid grid-cols-4 gap-3 md:grid-cols-6 mb-12">
+            </div>
+    </div>
+
+    <div id="chatBtn" onclick="toggleChat()" class="fixed bottom-6 right-6 bg-green-500 text-white p-4 rounded-full shadow-2xl cursor-pointer glow-green z-50">💬</div>
+    <div id="chatBox" class="fixed bottom-24 right-6 w-80 bg-white dark:bg-slate-800 rounded-[30px] shadow-2xl border hidden z-50 flex flex-col overflow-hidden">
+        <div class="bg-green-500 p-4 text-white font-bold flex justify-between">
+            <span class="text-xs uppercase" id="chatMail">User Support</span>
+            <button onclick="toggleChat()">✕</button>
+        </div>
+        <div id="msgContainer" class="h-64 overflow-y-auto p-4 flex flex-col gap-2 bg-gray-50 dark:bg-slate-900"></div>
+        <div class="p-3 border-t flex gap-2 bg-white dark:bg-slate-800">
+            <input id="chatInput" type="text" placeholder="Type..." class="w-full p-2 bg-gray-100 dark:bg-slate-700 rounded-xl outline-none">
+            <button onclick="sendMsg()" class="bg-green-500 text-white px-4 rounded-xl font-bold">></button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getDatabase, ref, onValue, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
+            authDomain: "ind-club-v1.firebaseapp.com",
+            databaseURL: "https://ind-club-v1-default-rtdb.firebaseio.com",
+            projectId: "ind-club-v1",
+            storageBucket: "ind-club-v1.appspot.com",
+            messagingSenderId: "1043970059809",
+            appId: "1:1043970059809:web:f730b857ca3a76c061fd60"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+        let userEmail = "";
+
+        onAuthStateChanged(auth, (user) => {
+            if(!user) window.location.href = "login.html";
+            userEmail = user.email;
+            document.getElementById('chatMail').innerText = userEmail;
+            onValue(ref(db, 'users/' + user.uid), (snap) => {
+                document.getElementById('uBalance').innerText = snap.val()?.balance || "0.00";
+            });
+            loadChat();
+        });
+
+        window.toggleTheme = () => document.body.classList.toggle('dark-mode');
+        window.toggleSidebar = () => document.getElementById('sidebar').classList.toggle('-translate-x-full');
+        window.toggleChat = () => document.getElementById('chatBox').classList.toggle('hidden');
+
+        // Load Admin Dynamic Content
+        onValue(ref(db, 'adminSettings'), (snap) => {
+            const data = snap.val();
+            if(!data) return;
+
+            // Slider
+            document.getElementById('sliderImg').src = data.sliderImg;
+            document.getElementById('sliderLink').href = data.sliderLink;
+
+            // Sidebar
+            const sb = document.getElementById('sidebarLinks');
+            sb.innerHTML = "";
+            if(data.sidebarLinks) Object.values(data.sidebarLinks).forEach(l => {
+                sb.innerHTML += `<a href="${l.url}" class="block p-4 font-bold card-ui rounded-2xl mb-2 hover:bg-green-500 hover:text-white transition uppercase text-xs tracking-widest">${l.name}</a>`;
+            });
+
+            // Grid Buttons
+            const grid = document.getElementById('miniGrid');
+            grid.innerHTML = "";
+            if(data.miniButtons) Object.values(data.miniButtons).forEach(b => {
+                grid.innerHTML += `
+                <a href="${b.url}" class="mini-grid-btn card-ui p-2 text-center">
+                    <span class="text-2xl mb-1">🎮</span>
+                    <span class="text-[9px] font-black uppercase truncate w-full">${b.name}</span>
+                </a>`;
+            });
+        });
+
+        // Chat System
+        window.sendMsg = () => {
+            const inp = document.getElementById('chatInput');
+            if(!inp.value) return;
+            push(ref(db, `chats/${userEmail.replace(/\./g, '_')}`), {
+                sender: userEmail, message: inp.value, timestamp: serverTimestamp()
+            });
+            inp.value = "";
+        };
+
+        function loadChat() {
+            onValue(ref(db, `chats/${userEmail.replace(/\./g, '_')}`), (snap) => {
+                const cont = document.getElementById('msgContainer');
+                cont.innerHTML = "";
+                snap.forEach(msg => {
+                    const d = msg.val();
+                    const isMe = d.sender === userEmail;
+                    cont.innerHTML += `<div class="${isMe ? 'self-end bg-green-500 text-white' : 'self-start bg-gray-200 text-black'} p-2 px-3 rounded-2xl text-[11px] font-bold max-w-[80%]">${d.message}</div>`;
+                });
+                cont.scrollTop = cont.scrollHeight;
+            });
+        }
+    </script>
+</body>
+</html>
