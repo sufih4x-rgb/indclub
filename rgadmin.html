@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Master Admin | IND-CLUB</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-white p-6">
+
+    <div class="max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-10">
+            <h1 class="text-3xl font-black italic">ADMIN PANEL</h1>
+            <div class="bg-slate-800 p-4 rounded-2xl text-center min-w-[150px]">
+                <p id="adminTimer" class="text-4xl font-mono text-yellow-400">00:00</p>
+                <p id="adminPeriod" class="text-[10px] text-slate-500 font-bold uppercase mt-1">Period Loading...</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-6 mb-10">
+            <div class="bg-green-900/20 border border-green-500/30 p-6 rounded-[35px] text-center">
+                <p class="text-xs font-bold text-green-500 uppercase mb-2">Total on Green</p>
+                <h2 id="greenTotal" class="text-4xl font-black">₹0</h2>
+            </div>
+            <div class="bg-red-900/20 border border-red-500/30 p-6 rounded-[35px] text-center">
+                <p class="text-xs font-bold text-red-500 uppercase mb-2">Total on Red</p>
+                <h2 id="redTotal" class="text-4xl font-black">₹0</h2>
+            </div>
+        </div>
+
+        <div class="bg-slate-800 p-8 rounded-[40px] border border-slate-700">
+            <h3 class="text-center text-xs font-black text-slate-500 uppercase mb-6 tracking-widest">Next Result Manipulation</h3>
+            <div class="grid grid-cols-3 gap-4">
+                <button onclick="forceResult('green')" class="bg-green-600 p-6 rounded-3xl font-black">FORCE GREEN</button>
+                <button onclick="forceResult('ai')" id="aiBtn" class="bg-blue-600 p-6 rounded-3xl font-black border-4 border-white">AI PROFIT MODE</button>
+                <button onclick="forceResult('red')" class="bg-red-600 p-6 rounded-3xl font-black">FORCE RED</button>
+            </div>
+            <p class="text-center text-[10px] text-slate-400 mt-6 italic">AI Mode makes the color with LESS money win (Maximize Admin Profit).</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getDatabase, ref, onValue, set, update, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+        const firebaseConfig = { /* Same Config */ };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        let time = 60;
+        let period = 20260427001;
+        let mode = 'ai';
+        let rAmt = 0, gAmt = 0;
+
+        // --- Engine ---
+        setInterval(() => {
+            time--;
+            if(time < 0) {
+                time = 60;
+                period++;
+                processGame();
+            }
+            update(ref(db, 'gameState'), { timer: time, period: period });
+            document.getElementById('adminTimer').innerText = `00:${time < 10 ? '0'+time : time}`;
+            document.getElementById('adminPeriod').innerText = "Period: " + period;
+        }, 1000);
+
+        async function processGame() {
+            let win = '';
+            if(mode === 'ai') {
+                win = rAmt > gAmt ? 'green' : 'red';
+            } else {
+                win = mode;
+            }
+
+            // Save History
+            push(ref(db, 'history'), { period: period - 1, result: win });
+            // Reset
+            remove(ref(db, 'currentBets'));
+            mode = 'ai'; 
+            document.getElementById('aiBtn').classList.add('border-white');
+        }
+
+        window.forceResult = (m) => {
+            mode = m;
+            alert("Result set to: " + m.toUpperCase());
+        };
+
+        // --- Profit Watcher ---
+        onValue(ref(db, 'currentBets'), snap => {
+            rAmt = 0; gAmt = 0;
+            snap.forEach(c => {
+                if(c.val().choice === 'red') rAmt += c.val().amount;
+                else gAmt += c.val().amount;
+            });
+            document.getElementById('redTotal').innerText = "₹" + rAmt;
+            document.getElementById('greenTotal').innerText = "₹" + gAmt;
+        });
+    </script>
+</body>
+</html>
