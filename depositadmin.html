@@ -3,29 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel | IND-CLUB</title>
+    <title>Master Admin | IND-CLUB</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-50 p-6">
-    <div class="max-w-4xl mx-auto space-y-8">
-        <div class="bg-white p-8 rounded-[35px] shadow-lg">
-            <h3 class="font-black mb-4 uppercase text-xs text-gray-400">Manage UPI IDs</h3>
-            <div class="flex gap-4 mb-6">
-                <input id="newUpi" type="text" placeholder="Add UPI (e.g. upi@okicici)" class="flex-1 p-4 bg-gray-50 rounded-2xl border">
-                <button onclick="addUPI()" class="bg-black text-white px-8 rounded-2xl font-bold">ADD</button>
+<body class="bg-slate-50 p-6 md:p-12">
+    <div class="max-w-5xl mx-auto space-y-10">
+        <h1 class="text-4xl font-black italic uppercase italic">Master Control Center</h1>
+
+        <div class="bg-white p-8 rounded-[35px] shadow-xl border">
+            <h3 class="text-xs font-black text-gray-400 mb-6 uppercase">Referral Milestone Rewards (₹)</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <input id="ref1" type="number" placeholder="1 Ref Bonus" class="p-4 bg-gray-50 border rounded-2xl font-bold">
+                <input id="ref10" type="number" placeholder="10 Ref Bonus" class="p-4 bg-gray-50 border rounded-2xl font-bold">
+                <input id="ref25" type="number" placeholder="25 Ref Bonus" class="p-4 bg-gray-50 border rounded-2xl font-bold">
             </div>
-            <div id="upiList" class="space-y-2"></div>
+            <button onclick="saveRefSettings()" class="w-full bg-blue-600 text-white p-4 rounded-2xl font-black shadow-lg">SAVE MILESTONE AMOUNTS</button>
         </div>
 
-        <div class="bg-white p-8 rounded-[35px] shadow-lg">
-            <h3 class="font-black mb-4 uppercase text-xs text-gray-400">Pending Requests</h3>
+        <div class="bg-white p-8 rounded-[35px] shadow-xl border">
+            <h3 class="text-xs font-black text-gray-400 mb-6 uppercase">Manage UPI Rotation</h3>
+            <div class="flex gap-4 mb-6">
+                <input id="newUpi" type="text" placeholder="Add UPI (e.g. pay@upi)" class="flex-1 p-4 bg-gray-50 border rounded-2xl">
+                <button onclick="addUPI()" class="bg-black text-white px-8 rounded-2xl font-bold">ADD UPI</button>
+            </div>
+            <div id="upiList" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
+        </div>
+
+        <div class="bg-white p-8 rounded-[35px] shadow-xl border">
+            <h3 class="text-xs font-black text-gray-400 mb-6 uppercase">Pending Deposits</h3>
             <div id="depositList" class="space-y-4"></div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, push, onValue, remove, update, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, push, onValue, remove, update, runTransaction, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
@@ -36,72 +48,79 @@
             messagingSenderId: "1043970059809",
             appId: "1:1043970059809:web:f730b857ca3a76c061fd60"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Manage UPIs
+        // --- Refer Settings ---
+        window.saveRefSettings = () => {
+            const m1 = document.getElementById('ref1').value;
+            const m10 = document.getElementById('ref10').value;
+            const m25 = document.getElementById('ref25').value;
+            set(ref(db, 'adminSettings/referralRewards'), { m1, m10, m25 });
+            alert("Referral Rewards Saved!");
+        };
+
+        // --- UPI Management ---
         window.addUPI = () => {
             const upi = document.getElementById('newUpi').value;
             if(upi) push(ref(db, 'adminSettings/upis'), { upi });
+            document.getElementById('newUpi').value = "";
         };
 
         onValue(ref(db, 'adminSettings/upis'), (snap) => {
-            const div = document.getElementById('upiList'); div.innerHTML = "";
+            const list = document.getElementById('upiList'); list.innerHTML = "";
             snap.forEach(c => {
-                div.innerHTML += `<div class="flex justify-between p-3 bg-gray-50 rounded-xl">
+                list.innerHTML += `<div class="p-3 bg-gray-50 border rounded-xl flex justify-between">
                     <span class="font-bold">${c.val().upi}</span>
-                    <button onclick="deleteItem('adminSettings/upis/${c.key}')" class="text-red-500 font-bold">DEL</button>
+                    <button onclick="deleteItem('adminSettings/upis/${c.key}')" class="text-red-500 font-bold text-xs">REMOVE</button>
                 </div>`;
             });
         });
 
-        // Deposit Approval Logic
+        // --- Deposit Management ---
         onValue(ref(db, 'pendingDeposits'), (snap) => {
-            const list = document.getElementById('depositList'); list.innerHTML = "";
+            const div = document.getElementById('depositList'); div.innerHTML = "";
             snap.forEach(c => {
                 const d = c.val();
                 if(d.status === 'pending') {
-                    list.innerHTML += `
-                    <div class="p-6 border rounded-[25px] bg-white shadow-sm">
-                        <div class="flex justify-between mb-4">
-                            <span class="font-black text-lg">₹${d.amount}</span>
-                            <span class="text-[10px] bg-blue-100 text-blue-600 px-2 py-1 rounded-lg font-bold uppercase">UTR: ${d.utr}</span>
+                    div.innerHTML += `
+                    <div class="p-6 border rounded-3xl bg-white shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+                        <div>
+                            <p class="text-xl font-black">₹${d.amount}</p>
+                            <p class="text-[10px] font-bold text-blue-600 uppercase">UTR: ${d.utr}</p>
+                            <p class="text-[10px] text-gray-400 font-bold">${d.email}</p>
                         </div>
-                        <p class="text-xs text-gray-500 mb-4">User: ${d.email}</p>
-                        <div class="flex gap-2">
-                            <button onclick="action('${c.key}', '${d.uid}', ${d.amount}, 'approve')" class="flex-1 bg-green-500 text-white p-3 rounded-xl font-bold">APPROVE</button>
-                            <button onclick="action('${c.key}', '${d.uid}', ${d.amount}, 'cancel')" class="flex-1 bg-red-500 text-white p-3 rounded-xl font-bold">REJECT</button>
+                        <div class="flex gap-2 w-full md:w-auto">
+                            <button onclick="processDeposit('${c.key}', '${d.uid}', ${d.amount}, 'approve')" class="flex-1 bg-green-500 text-white px-6 py-3 rounded-xl font-black">APPROVE</button>
+                            <button onclick="processDeposit('${c.key}', '${d.uid}', ${d.amount}, 'reject')" class="flex-1 bg-red-500 text-white px-6 py-3 rounded-xl font-black">REJECT</button>
                         </div>
                     </div>`;
                 }
             });
         });
 
-        window.action = (key, uid, amt, type) => {
-            if(type === 'approve') {
-                // Add balance
-                runTransaction(ref(db, `users/${uid}/balance`), (curr) => (curr || 0) + Number(amt));
-                update(ref(db, `users/${uid}`), { lastStatus: 'approved' });
-                update(ref(db, `pendingDeposits/${key}`), { status: 'approved' });
-                
-                // Referral Logic (Milestone)
-                checkReferral(uid);
+        window.processDeposit = async (key, uid, amt, action) => {
+            if(action === 'approve') {
+                // 1. Add balance
+                await runTransaction(ref(db, `users/${uid}/balance`), (curr) => (curr || 0) + Number(amt));
+                // 2. Mark for popup notification
+                await update(ref(db, `users/${uid}`), { lastStatus: 'approved' });
+                // 3. Referral Logic
+                checkReferralBonus(uid);
             } else {
-                const r = prompt("Reason for rejection?");
-                update(ref(db, `pendingDeposits/${key}`), { status: 'cancelled', reason: r });
+                const reason = prompt("Rejection Reason:");
+                await update(ref(db, `pendingDeposits/${key}`), { status: 'rejected', reason });
             }
+            remove(ref(db, `pendingDeposits/${key}`));
         };
 
-        async function checkReferral(uid) {
+        async function checkReferralBonus(uid) {
             onValue(ref(db, `users/${uid}`), (snap) => {
                 const u = snap.val();
-                if(!u.firstDepo && u.referrer) {
-                    // Award bonus to referrer
-                    const refID = u.referrer;
-                    runTransaction(ref(db, `users/${refID}/refCount`), (c) => (c || 0) + 1);
-                    // Add milestone rewards here based on refCount (1, 10, 25)
-                    update(ref(db, `users/${uid}`), { firstDepo: true });
+                if(!u.firstDepositDone && u.referredBy) {
+                    const referrerId = u.referredBy;
+                    runTransaction(ref(db, `users/${referrerId}/refCount`), (c) => (c || 0) + 1);
+                    update(ref(db, `users/${uid}`), { firstDepositDone: true });
                 }
             }, {onlyOnce: true});
         }
