@@ -7,43 +7,24 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
-        body { background: white; font-family: sans-serif; }
-        .glow-btn { 
-            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.4); 
-            border: 2px solid #22c55e; 
-            transition: 0.3s;
-        }
-        .glow-btn:active { transform: scale(0.95); }
-        .qr-box { border: 2px dashed #e2e8f0; border-radius: 30px; background: #fff; }
+        .glow-btn { box-shadow: 0 5px 20px rgba(34, 197, 94, 0.4); border: 2px solid #22c55e; }
+        .qr-card { border: 2px dashed #cbd5e1; border-radius: 30px; background: #fff; }
     </style>
 </head>
-<body class="p-6">
-    <div class="max-w-md mx-auto">
-        <h1 class="text-4xl font-black italic mb-8 tracking-tighter">DEPOSIT CASH</h1>
+<body class="bg-white p-6">
+    <div class="max-w-md mx-auto space-y-6">
+        <h1 class="text-3xl font-black italic uppercase">Add Cash</h1>
 
-        <div class="space-y-6">
-            <div>
-                <p class="text-[10px] font-bold text-gray-400 uppercase ml-4 mb-2">Enter Amount</p>
-                <input type="number" id="amount" placeholder="₹500" class="w-full p-6 bg-gray-50 rounded-[30px] border-none outline-none text-3xl font-black" oninput="updateQR()">
-            </div>
-            
-            <div id="qrContainer" class="qr-box p-8 flex flex-col items-center hidden">
-                <div id="qrcode" class="p-2 bg-white"></div>
-                <div class="text-center mt-6">
-                    <p class="text-[10px] font-bold text-gray-400 uppercase">Payable to UPI ID</p>
-                    <p id="upiIdDisplay" class="font-black text-sm text-green-600 italic">loading...</p>
-                </div>
-            </div>
+        <input type="number" id="amt" placeholder="Enter Amount" class="w-full p-6 bg-gray-50 rounded-[30px] text-2xl font-black outline-none" oninput="showQR()">
 
-            <div>
-                <p class="text-[10px] font-bold text-gray-400 uppercase ml-4 mb-2">Transaction ID (12 Digit UTR)</p>
-                <input type="text" id="utr" maxlength="12" placeholder="000012345678" class="w-full p-6 bg-gray-50 rounded-[30px] border-none outline-none font-black text-center tracking-widest">
-            </div>
-            
-            <button onclick="submitRequest()" id="subBtn" class="w-full bg-white text-green-500 p-6 rounded-[30px] font-black text-xl glow-btn">
-                SUBMIT DEPOSIT
-            </button>
+        <div id="qrArea" class="qr-card p-8 flex flex-col items-center hidden">
+            <div id="qrcode"></div>
+            <p class="mt-4 text-[10px] font-black text-gray-400 uppercase">Send to: <span id="targetUpi" class="text-green-600">...</span></p>
         </div>
+
+        <input type="text" id="utr" maxlength="12" placeholder="Enter 12-Digit UTR" class="w-full p-6 bg-gray-50 rounded-[30px] font-black text-center tracking-widest outline-none">
+
+        <button onclick="submitDepo()" class="w-full bg-white text-green-500 p-6 rounded-[30px] font-black text-xl glow-btn transition active:scale-95">SUBMIT PAYMENT</button>
     </div>
 
     <script type="module">
@@ -60,64 +41,54 @@
             messagingSenderId: "1043970059809",
             appId: "1:1043970059809:web:f730b857ca3a76c061fd60"
         };
-
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
         const auth = getAuth(app);
 
-        let upiList = [];
-        let selectedUPI = "";
+        let upis = [];
+        let chosenUpi = "";
 
-        // Fetch UPIs from Admin & Rotate
         onValue(ref(db, 'adminSettings/upis'), (snap) => {
-            upiList = [];
-            snap.forEach(c => upiList.push(c.val().upi));
-            if(upiList.length > 0) {
-                selectedUPI = upiList[Math.floor(Math.random() * upiList.length)];
-                document.getElementById('upiIdDisplay').innerText = selectedUPI;
-            }
+            upis = []; snap.forEach(c => upis.push(c.val().upi));
+            chosenUpi = upis[Math.floor(Math.random() * upis.length)];
+            document.getElementById('targetUpi').innerText = chosenUpi;
         });
 
-        window.updateQR = () => {
-            const amt = document.getElementById('amount').value;
-            const container = document.getElementById('qrContainer');
-            if(amt >= 10 && selectedUPI) {
-                container.classList.remove('hidden');
+        window.showQR = () => {
+            const a = document.getElementById('amt').value;
+            const area = document.getElementById('qrArea');
+            if(a >= 10 && chosenUpi) {
+                area.classList.remove('hidden');
                 document.getElementById('qrcode').innerHTML = "";
-                new QRCode(document.getElementById("qrcode"), {
-                    text: `upi://pay?pa=${selectedUPI}&am=${amt}&cu=INR`,
-                    width: 180, height: 180
-                });
-            } else { container.classList.add('hidden'); }
+                new QRCode(document.getElementById("qrcode"), { text: `upi://pay?pa=${chosenUpi}&am=${a}&cu=INR`, width: 180, height: 180 });
+            } else { area.classList.add('hidden'); }
         };
 
-        window.submitRequest = async () => {
-            const utr = document.getElementById('utr').value;
-            const amt = document.getElementById('amount').value;
-            const user = auth.currentUser;
-
-            if(!user) return alert("Please Login!");
-            if(utr.length !== 12) return alert("UTR must be exactly 12 digits!");
-
-            await push(ref(db, 'pendingDeposits'), {
-                uid: user.uid,
-                email: user.email,
-                amount: amt,
-                utr: utr,
-                upiUsed: selectedUPI,
-                status: 'pending',
-                date: new Date().toLocaleString()
-            });
+        window.submitDepo = async () => {
+            const u = document.getElementById('utr').value;
+            const a = document.getElementById('amt').value;
+            if(u.length !== 12) return alert("Enter valid 12-digit UTR!");
             
-            alert("Payment Submitted! Wait for approval.");
+            await push(ref(db, 'pendingDeposits'), {
+                uid: auth.currentUser.uid,
+                email: auth.currentUser.email,
+                amount: a,
+                utr: u,
+                status: 'pending'
+            });
+            alert("Request Sent!");
             location.reload();
         };
 
-        // Success Popup Check (Last Deposit)
-        onValue(ref(db, 'users/' + auth.currentUser?.uid), (snap) => {
-            if(snap.val()?.lastStatus === 'approved') {
-                alert("Your last deposit was added in your balance ✅");
-                set(ref(db, `users/${auth.currentUser.uid}/lastStatus`), 'notified');
+        // Success Popup Check
+        onAuthStateChanged(auth, (user) => {
+            if(user) {
+                onValue(ref(db, 'users/' + user.uid), (snap) => {
+                    if(snap.val()?.lastStatus === 'approved') {
+                        alert("Your last deposit was added in your balance ✅");
+                        set(ref(db, `users/${user.uid}/lastStatus`), 'notified');
+                    }
+                });
             }
         });
     </script>
