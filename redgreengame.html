@@ -85,7 +85,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue, set, push, runTransaction, onDisconnect } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const firebaseConfig = {
+       const firebaseConfig = {
             apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
             authDomain: "ind-club-v1.firebaseapp.com",
             databaseURL: "https://ind-club-v1-default-rtdb.firebaseio.com",
@@ -94,6 +94,7 @@
             messagingSenderId: "1043970059809",
             appId: "1:1043970059809:web:f730b857ca3a76c061fd60"
         };
+
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
