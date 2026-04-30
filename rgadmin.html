@@ -52,9 +52,15 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getDatabase, ref, onValue, set, update, push, remove, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const firebaseConfig = { /* SAME CONFIG */ };
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        const firebaseConfig = {
+            apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
+            authDomain: "ind-club-v1.firebaseapp.com",
+            databaseURL: "https://ind-club-v1-default-rtdb.firebaseio.com",
+            projectId: "ind-club-v1",
+            storageBucket: "ind-club-v1.appspot.com",
+            messagingSenderId: "1043970059809",
+            appId: "1:1043970059809:web:f730b857ca3a76c061fd60"
+        };
 
         let time = 60, period = 20260430001, mode = 'ai', gTotal = 0, rTotal = 0;
         let betList = [];
