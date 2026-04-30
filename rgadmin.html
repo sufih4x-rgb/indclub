@@ -2,123 +2,173 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Master Admin | IND-CLUB</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin | Tiranga Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #4361ee; --bg: #0f172a; --card: #1e293b; --white: #ffffff; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
+        body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; color: var(--white); margin: 0; padding: 20px; }
+        
+        .admin-header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 20px; border-radius: 20px; margin-bottom: 25px; border: 1px solid #334155; }
+        
+        .control-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+        .control-card { background: var(--card); padding: 25px; border-radius: 20px; text-align: center; border: 1px solid #334155; }
+        
+        .bet-monitor { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #334155; min-height: 400px; }
+        .bet-row { display: grid; grid-template-columns: 1fr 1fr 1fr; padding: 15px; border-bottom: 1px solid #334155; align-items: center; }
+        
+        .btn { padding: 15px 30px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; width: 100%; font-size: 16px; margin-top: 10px; }
+        .btn-red { background: var(--danger); color: white; }
+        .btn-green { background: var(--success); color: white; }
+        .btn-auto { background: #64748b; color: white; }
+        .active-mode { border: 4px solid var(--white); transform: scale(1.05); }
+
+        .stat-box { display: flex; justify-content: space-around; margin-top: 15px; }
+        .stat-item { text-align: center; }
+        .stat-item span { display: block; font-size: 12px; color: #94a3b8; }
+        .stat-item b { font-size: 20px; }
+
+        .badge { padding: 5px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; }
+        .badge-red { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
+        .badge-green { background: rgba(16, 185, 129, 0.2); color: var(--success); }
+    </style>
 </head>
-<body class="bg-slate-900 text-white p-6">
-    <div class="max-w-4xl mx-auto">
-        <div class="flex justify-between items-center mb-10">
-            <h1 class="text-3xl font-black italic">IND-CLUB ADMIN</h1>
-            <div class="text-right">
-                <p id="timer" class="text-5xl font-mono text-yellow-400">00:00</p>
-                <p id="period" class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">---</p>
-            </div>
-        </div>
+<body>
 
-        <div class="grid grid-cols-3 gap-6 mb-10">
-            <div class="bg-slate-800 p-6 rounded-3xl text-center border-2 border-green-500/30">
-                <p class="text-[10px] uppercase font-bold text-slate-500 mb-2">Total Green</p>
-                <h2 id="gTotal" class="text-3xl font-black text-green-500">₹0</h2>
-            </div>
-            <div class="bg-slate-800 p-6 rounded-3xl text-center border-2 border-red-500/30">
-                <p class="text-[10px] uppercase font-bold text-slate-500 mb-2">Total Red</p>
-                <h2 id="rTotal" class="text-3xl font-black text-red-500">₹0</h2>
-            </div>
-            <div class="bg-slate-800 p-6 rounded-3xl text-center border-2 border-blue-500/30">
-                <p class="text-[10px] uppercase font-bold text-slate-500 mb-2">Online Users</p>
-                <h2 id="onlineCount" class="text-3xl font-black text-blue-500">0</h2>
-            </div>
-        </div>
+<div class="admin-header">
+    <div>
+        <h2 style="margin:0;">Tiranga Controller</h2>
+        <p style="color:#94a3b8; margin:5px 0 0;">Period ID: <span id="currentPeriod">---</span></p>
+    </div>
+    <div style="text-align: right;">
+        <div style="color:var(--danger); font-weight:900; font-size:24px;" id="adminClock">00:00</div>
+        <div id="modeStatus" class="badge" style="background:var(--primary)">MODE: AUTO</div>
+    </div>
+</div>
 
-        <!-- Result Controls -->
-        <div class="bg-slate-800 p-8 rounded-[40px] mb-10">
-            <h3 class="text-center text-xs font-bold text-slate-500 uppercase mb-6 tracking-widest">Result Control</h3>
-            <div class="grid grid-cols-3 gap-4">
-                <button onclick="setMode('green')" class="bg-green-600 p-6 rounded-3xl font-black shadow-lg shadow-green-900/20 active:scale-95 transition">FORCE GREEN</button>
-                <button onclick="setMode('ai')" id="aiBtn" class="bg-blue-600 p-6 rounded-3xl font-black border-4 border-white shadow-lg active:scale-95 transition">AI PROFIT MODE</button>
-                <button onclick="setMode('red')" class="bg-red-600 p-6 rounded-3xl font-black shadow-lg shadow-red-900/20 active:scale-95 transition">FORCE RED</button>
-            </div>
-            <p id="modeStatus" class="text-center text-[10px] text-slate-400 mt-4 uppercase font-bold">Current Mode: AI (Profit Guaranteed)</p>
-        </div>
-
-        <!-- Live Bets -->
-        <div class="bg-slate-800 rounded-[30px] p-6 overflow-hidden">
-            <p class="text-xs font-black text-slate-500 uppercase mb-4 tracking-widest">Live User Bets</p>
-            <div id="liveBets" class="space-y-3 max-h-60 overflow-y-auto"></div>
-        </div>
+<div class="control-grid">
+    <div class="control-card">
+        <h3>Result Control</h3>
+        <p style="font-size:12px; color:#94a3b8;">Force next winning color</p>
+        <button class="btn btn-red" id="forceRED" onclick="setMode('RED')">FORCE RED</button>
+        <button class="btn btn-green" id="forceGREEN" onclick="setMode('GREEN')">FORCE GREEN</button>
+        <button class="btn btn-auto active-mode" id="forceAUTO" onclick="setMode('AUTO')">AUTO (SYSTEM)</button>
     </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue, set, update, push, remove, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    <div class="control-card">
+        <h3>Live Betting Stats</h3>
+        <div class="stat-box">
+            <div class="stat-item">
+                <span>Total Red Bet</span>
+                <b id="totalRedAmt" style="color:var(--danger);">₹0</b>
+            </div>
+            <div class="stat-item">
+                <span>Total Green Bet</span>
+                <b id="totalGreenAmt" style="color:var(--success);">₹0</b>
+            </div>
+        </div>
+        <p style="margin-top:20px; font-size:11px; color:#94a3b8;">Tip: High investment side should lose for profit.</p>
+    </div>
+</div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
-            authDomain: "ind-club-v1.firebaseapp.com",
-            databaseURL: "https://ind-club-v1-default-rtdb.firebaseio.com",
-            projectId: "ind-club-v1",
-            storageBucket: "ind-club-v1.appspot.com",
-            messagingSenderId: "1043970059809",
-            appId: "1:1043970059809:web:f730b857ca3a76c061fd60"
-        };
+<div class="bet-monitor">
+    <h3 style="padding: 0 20px;">Live User Bets</h3>
+    <div class="bet-row" style="color:#94a3b8; font-weight:800; border-bottom: 2px solid #334155;">
+        <span>User ID</span>
+        <span>Selection</span>
+        <span>Amount</span>
+    </div>
+    <div id="betList">
+        </div>
+</div>
 
-        let time = 60, period = 20260430001, mode = 'ai', gTotal = 0, rTotal = 0;
-        let betList = [];
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        // Main Timer Loop
-        setInterval(() => {
-            time--;
-            if(time < 0) { time = 60; period++; processGame(); }
-            update(ref(db, 'gameState'), { timer: time, period: period });
-            document.getElementById('timer').innerText = `00:${time < 10 ? '0'+time : time}`;
-            document.getElementById('period').innerText = "Period ID: " + period;
-        }, 1000);
+    const firebaseConfig = {
+  apiKey: "AIzaSyBc1CIlHGlYg1YDSei59ofAac4g3zcGlgA",
+  authDomain: "ind-club-v1.firebaseapp.com",
+  databaseURL: "https://ind-club-v1-default-rtdb.firebaseio.com",
+  projectId: "ind-club-v1",
+  storageBucket: "ind-club-v1.appspot.com",
+  messagingSenderId: "1043970059809",
+  appId: "1:1043970059809:web:f730b857ca3a76c061fd60",
+  measurementId: "G-23MD02RGN3"
+};
 
-        async function processGame() {
-            let winColor = '';
-            // Admin Profit Logic
-            if(mode === 'ai') winColor = rTotal > gTotal ? 'green' : 'red';
-            else winColor = mode;
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-            // Save to History
-            push(ref(db, 'history'), { period: period - 1, result: winColor });
+    let periodId = "";
 
-            // Settlement: 1.9x payout (Admin retains 0.1 profit)
-            betList.forEach(bet => {
-                if(bet.choice === winColor) {
-                    const winAmt = Math.floor(bet.amount * 1.9); // Profit controlled
-                    runTransaction(ref(db, `users/${bet.uid}/balance`), curr => (curr || 0) + winAmt);
-                }
-            });
-
-            // Cleanup
-            remove(ref(db, 'currentBets'));
-            mode = 'ai'; // Reset to AI for next round
-            updateStatus();
+    // 1. Clock & Period Logic (Sync with User)
+    setInterval(() => {
+        const now = new Date();
+        const totalSec = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
+        const rem = 60 - (totalSec % 60);
+        const pId = now.toISOString().slice(0,10).replace(/-/g,'') + Math.floor(totalSec / 60);
+        
+        if(periodId !== pId) {
+            periodId = pId;
+            document.getElementById('currentPeriod').innerText = periodId;
+            listenToBets(periodId); // New period start, listen to new bets
         }
+        const s = rem % 60;
+        document.getElementById('adminClock').innerText = `00:${s < 10 ? '0'+s : s}`;
+    }, 1000);
 
-        window.setMode = (m) => { mode = m; updateStatus(); };
+    // 2. Result Control Logic
+    window.setMode = (mode) => {
+        set(ref(db, 'admin_control'), mode);
+        
+        // UI Button highlight
+        document.querySelectorAll('.btn').forEach(b => b.classList.remove('active-mode'));
+        if(mode === 'RED') document.getElementById('forceRED').classList.add('active-mode');
+        if(mode === 'GREEN') document.getElementById('forceGREEN').classList.add('active-mode');
+        if(mode === 'AUTO') document.getElementById('forceAUTO').classList.add('active-mode');
+        
+        document.getElementById('modeStatus').innerText = "MODE: " + mode;
+    };
 
-        function updateStatus() {
-            document.getElementById('modeStatus').innerText = "Current Mode: " + (mode === 'ai' ? "AI (Profit Guaranteed)" : mode.toUpperCase());
-            document.getElementById('aiBtn').classList.toggle('border-white', mode === 'ai');
-        }
+    // 3. Listen to Live Bets for Current Period
+    function listenToBets(pId) {
+        onValue(ref(db, `global_bets/${pId}`), snap => {
+            const list = document.getElementById('betList');
+            let redTotal = 0;
+            let greenTotal = 0;
+            let html = "";
 
-        onValue(ref(db, 'currentBets'), snap => {
-            gTotal = 0; rTotal = 0; betList = [];
-            const list = document.getElementById('liveBets');
-            list.innerHTML = "";
-            snap.forEach(c => {
-                const b = c.val();
-                betList.push(b);
-                if(b.choice === 'red') rTotal += b.amount; else gTotal += b.amount;
-                list.innerHTML += `<div class="bg-slate-700/50 p-3 rounded-xl flex justify-between text-xs"><span>${b.uid}</span><span class="${b.choice === 'red' ? 'text-red-400' : 'text-green-400'} font-bold">₹${b.amount} on ${b.choice.toUpperCase()}</span></div>`;
-            });
-            document.getElementById('gTotal').innerText = "₹" + gTotal;
-            document.getElementById('rTotal').innerText = "₹" + rTotal;
+            if(snap.exists()) {
+                snap.forEach(child => {
+                    const bet = child.val();
+                    const userId = child.key.substring(0, 6) + "...";
+                    
+                    if(bet.choice === 'RED') redTotal += bet.amount;
+                    else greenTotal += bet.amount;
+
+                    html += `
+                    <div class="bet-row">
+                        <span>${userId}</span>
+                        <span><span class="badge ${bet.choice === 'RED' ? 'badge-red' : 'badge-green'}">${bet.choice}</span></span>
+                        <b style="color:var(--white)">₹${bet.amount}</b>
+                    </div>`;
+                });
+                list.innerHTML = html;
+            } else {
+                list.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">Waiting for bets...</p>`;
+            }
+
+            document.getElementById('totalRedAmt').innerText = "₹" + redTotal;
+            document.getElementById('totalGreenAmt').innerText = "₹" + greenTotal;
         });
+    }
 
-        onValue(ref(db, 'online'), s => { document.getElementById('onlineCount').innerText = s.size || 0; });
-    </script>
+    // Load initial mode
+    get(ref(db, 'admin_control')).then(s => {
+        if(s.exists()) setMode(s.val());
+    });
+
+</script>
 </body>
 </html>
