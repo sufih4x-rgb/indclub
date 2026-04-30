@@ -6,95 +6,113 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-900 text-white p-6">
-
     <div class="max-w-4xl mx-auto">
         <div class="flex justify-between items-center mb-10">
-            <h1 class="text-3xl font-black italic">ADMIN PANEL</h1>
-            <div class="bg-slate-800 p-4 rounded-2xl text-center min-w-[150px]">
-                <p id="adminTimer" class="text-4xl font-mono text-yellow-400">00:00</p>
-                <p id="adminPeriod" class="text-[10px] text-slate-500 font-bold uppercase mt-1">Period Loading...</p>
+            <h1 class="text-3xl font-black italic">IND-CLUB ADMIN</h1>
+            <div class="text-right">
+                <p id="timer" class="text-5xl font-mono text-yellow-400">00:00</p>
+                <p id="period" class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-2">---</p>
             </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-6 mb-10">
-            <div class="bg-green-900/20 border border-green-500/30 p-6 rounded-[35px] text-center">
-                <p class="text-xs font-bold text-green-500 uppercase mb-2">Total on Green</p>
-                <h2 id="greenTotal" class="text-4xl font-black">₹0</h2>
+        <div class="grid grid-cols-3 gap-6 mb-10">
+            <div class="bg-slate-800 p-6 rounded-3xl text-center border-2 border-green-500/30">
+                <p class="text-[10px] uppercase font-bold text-slate-500 mb-2">Total Green</p>
+                <h2 id="gTotal" class="text-3xl font-black text-green-500">₹0</h2>
             </div>
-            <div class="bg-red-900/20 border border-red-500/30 p-6 rounded-[35px] text-center">
-                <p class="text-xs font-bold text-red-500 uppercase mb-2">Total on Red</p>
-                <h2 id="redTotal" class="text-4xl font-black">₹0</h2>
+            <div class="bg-slate-800 p-6 rounded-3xl text-center border-2 border-red-500/30">
+                <p class="text-[10px] uppercase font-bold text-slate-500 mb-2">Total Red</p>
+                <h2 id="rTotal" class="text-3xl font-black text-red-500">₹0</h2>
+            </div>
+            <div class="bg-slate-800 p-6 rounded-3xl text-center border-2 border-blue-500/30">
+                <p class="text-[10px] uppercase font-bold text-slate-500 mb-2">Online Users</p>
+                <h2 id="onlineCount" class="text-3xl font-black text-blue-500">0</h2>
             </div>
         </div>
 
-        <div class="bg-slate-800 p-8 rounded-[40px] border border-slate-700">
-            <h3 class="text-center text-xs font-black text-slate-500 uppercase mb-6 tracking-widest">Next Result Manipulation</h3>
+        <!-- Result Controls -->
+        <div class="bg-slate-800 p-8 rounded-[40px] mb-10">
+            <h3 class="text-center text-xs font-bold text-slate-500 uppercase mb-6 tracking-widest">Result Control</h3>
             <div class="grid grid-cols-3 gap-4">
-                <button onclick="forceResult('green')" class="bg-green-600 p-6 rounded-3xl font-black">FORCE GREEN</button>
-                <button onclick="forceResult('ai')" id="aiBtn" class="bg-blue-600 p-6 rounded-3xl font-black border-4 border-white">AI PROFIT MODE</button>
-                <button onclick="forceResult('red')" class="bg-red-600 p-6 rounded-3xl font-black">FORCE RED</button>
+                <button onclick="setMode('green')" class="bg-green-600 p-6 rounded-3xl font-black shadow-lg shadow-green-900/20 active:scale-95 transition">FORCE GREEN</button>
+                <button onclick="setMode('ai')" id="aiBtn" class="bg-blue-600 p-6 rounded-3xl font-black border-4 border-white shadow-lg active:scale-95 transition">AI PROFIT MODE</button>
+                <button onclick="setMode('red')" class="bg-red-600 p-6 rounded-3xl font-black shadow-lg shadow-red-900/20 active:scale-95 transition">FORCE RED</button>
             </div>
-            <p class="text-center text-[10px] text-slate-400 mt-6 italic">AI Mode makes the color with LESS money win (Maximize Admin Profit).</p>
+            <p id="modeStatus" class="text-center text-[10px] text-slate-400 mt-4 uppercase font-bold">Current Mode: AI (Profit Guaranteed)</p>
+        </div>
+
+        <!-- Live Bets -->
+        <div class="bg-slate-800 rounded-[30px] p-6 overflow-hidden">
+            <p class="text-xs font-black text-slate-500 uppercase mb-4 tracking-widest">Live User Bets</p>
+            <div id="liveBets" class="space-y-3 max-h-60 overflow-y-auto"></div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getDatabase, ref, onValue, set, update, push, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+        import { getDatabase, ref, onValue, set, update, push, remove, runTransaction } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        const firebaseConfig = { /* Same Config */ };
+        const firebaseConfig = { /* SAME CONFIG */ };
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        let time = 60;
-        let period = 20260427001;
-        let mode = 'ai';
-        let rAmt = 0, gAmt = 0;
+        let time = 60, period = 20260430001, mode = 'ai', gTotal = 0, rTotal = 0;
+        let betList = [];
 
-        // --- Engine ---
+        // Main Timer Loop
         setInterval(() => {
             time--;
-            if(time < 0) {
-                time = 60;
-                period++;
-                processGame();
-            }
+            if(time < 0) { time = 60; period++; processGame(); }
             update(ref(db, 'gameState'), { timer: time, period: period });
-            document.getElementById('adminTimer').innerText = `00:${time < 10 ? '0'+time : time}`;
-            document.getElementById('adminPeriod').innerText = "Period: " + period;
+            document.getElementById('timer').innerText = `00:${time < 10 ? '0'+time : time}`;
+            document.getElementById('period').innerText = "Period ID: " + period;
         }, 1000);
 
         async function processGame() {
-            let win = '';
-            if(mode === 'ai') {
-                win = rAmt > gAmt ? 'green' : 'red';
-            } else {
-                win = mode;
-            }
+            let winColor = '';
+            // Admin Profit Logic
+            if(mode === 'ai') winColor = rTotal > gTotal ? 'green' : 'red';
+            else winColor = mode;
 
-            // Save History
-            push(ref(db, 'history'), { period: period - 1, result: win });
-            // Reset
+            // Save to History
+            push(ref(db, 'history'), { period: period - 1, result: winColor });
+
+            // Settlement: 1.9x payout (Admin retains 0.1 profit)
+            betList.forEach(bet => {
+                if(bet.choice === winColor) {
+                    const winAmt = Math.floor(bet.amount * 1.9); // Profit controlled
+                    runTransaction(ref(db, `users/${bet.uid}/balance`), curr => (curr || 0) + winAmt);
+                }
+            });
+
+            // Cleanup
             remove(ref(db, 'currentBets'));
-            mode = 'ai'; 
-            document.getElementById('aiBtn').classList.add('border-white');
+            mode = 'ai'; // Reset to AI for next round
+            updateStatus();
         }
 
-        window.forceResult = (m) => {
-            mode = m;
-            alert("Result set to: " + m.toUpperCase());
-        };
+        window.setMode = (m) => { mode = m; updateStatus(); };
 
-        // --- Profit Watcher ---
+        function updateStatus() {
+            document.getElementById('modeStatus').innerText = "Current Mode: " + (mode === 'ai' ? "AI (Profit Guaranteed)" : mode.toUpperCase());
+            document.getElementById('aiBtn').classList.toggle('border-white', mode === 'ai');
+        }
+
         onValue(ref(db, 'currentBets'), snap => {
-            rAmt = 0; gAmt = 0;
+            gTotal = 0; rTotal = 0; betList = [];
+            const list = document.getElementById('liveBets');
+            list.innerHTML = "";
             snap.forEach(c => {
-                if(c.val().choice === 'red') rAmt += c.val().amount;
-                else gAmt += c.val().amount;
+                const b = c.val();
+                betList.push(b);
+                if(b.choice === 'red') rTotal += b.amount; else gTotal += b.amount;
+                list.innerHTML += `<div class="bg-slate-700/50 p-3 rounded-xl flex justify-between text-xs"><span>${b.uid}</span><span class="${b.choice === 'red' ? 'text-red-400' : 'text-green-400'} font-bold">₹${b.amount} on ${b.choice.toUpperCase()}</span></div>`;
             });
-            document.getElementById('redTotal').innerText = "₹" + rAmt;
-            document.getElementById('greenTotal').innerText = "₹" + gAmt;
+            document.getElementById('gTotal').innerText = "₹" + gTotal;
+            document.getElementById('rTotal').innerText = "₹" + rTotal;
         });
+
+        onValue(ref(db, 'online'), s => { document.getElementById('onlineCount').innerText = s.size || 0; });
     </script>
 </body>
 </html>
