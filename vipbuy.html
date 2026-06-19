@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP Plans & Rules</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: #f7f9fc; padding: 20px; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 20px; }
+        
+        /* Header Styling */
+        .page-header { display: flex; align-items: center; gap: 16px; margin-bottom: 5px; }
+        .back-btn { width: 40px; height: 40px; background: #ffffff; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #2c3e50; text-decoration: none; box-shadow: 0 4px 12px rgba(163, 177, 198, 0.15); transition: 0.2s; flex-shrink: 0; }
+        .back-btn:hover { background: #14b8a6; color: white; }
+        .page-header h1 { font-size: 24px; font-weight: 700; color: #0f172a; }
+        
+        /* Section Styling */
+        .section-title { font-size: 14px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-top: 10px; }
+        
+        /* VIP Plans Box */
+        .vip-box { background: linear-gradient(135deg, #1e293b, #334155); border-radius: 20px; padding: 20px; color: white; }
+        .vip-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .vip-item:last-child { border-bottom: none; }
+        
+        .plan-info { display: flex; flex-direction: column; gap: 2px; }
+        .plan-name { font-size: 14px; font-weight: 600; color: #ffffff; }
+        .plan-price { font-size: 15px; font-weight: 700; color: #2dd4bf; }
+        
+        .buy-btn { background: #6366f1; color: white; border: none; padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); }
+        .buy-btn:hover { background: #4f46e5; transform: translateY(-1px); }
+        .buy-btn:active { transform: translateY(0); }
+        
+        /* Scrollable Rules Box */
+        .rules-box { 
+            background: #ffffff; border-radius: 20px; padding: 20px; 
+            box-shadow: 0 8px 20px rgba(163, 177, 198, 0.08); 
+            max-height: 350px; overflow-y: auto; 
+        }
+        .rule-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px dashed #e2e8f0; }
+        .rule-item i { color: #f59e0b; font-size: 14px; margin-top: 4px; }
+        .rule-item p { font-size: 13px; color: #334155; line-height: 1.5; }
+
+        /* Scrollbar Design */
+        .rules-box::-webkit-scrollbar { width: 6px; }
+        .rules-box::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        /* Modern Payment Modal Sheet */
+        .payment-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; padding: 20px; z-index: 999; opacity: 0; pointer-events: none; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .payment-modal.active { opacity: 1; pointer-events: auto; }
+        
+        .modal-content { background: #ffffff; width: 100%; max-width: 400px; border-radius: 24px; padding: 24px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); transform: translateY(20px); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; flex-direction: column; align-items: center; text-align: center; }
+        .payment-modal.active .modal-content { transform: translateY(0); }
+        
+        .modal-header { display: flex; justify-content: space-between; align-items: center; width: 100%; margin-bottom: 18px; }
+        .modal-title { font-size: 16px; font-weight: 700; color: #0f172a; }
+        .close-modal-btn { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #64748b; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .close-modal-btn:hover { background: #fee2e2; color: #ef4444; }
+        
+        .qr-container { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 14px; margin-bottom: 14px; width: 180px; height: 180px; display: flex; align-items: center; justify-content: center; position: relative; }
+        .qr-container img { width: 100%; height: 100%; object-fit: contain; }
+        
+        .upi-id-box { background: #f1f5f9; border: 1px dashed #cbd5e1; padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 18px; cursor: pointer; display: flex; align-items: center; gap: 8px; max-width: 100%; }
+        .upi-id-box i { color: #6366f1; }
+        
+        .input-group { width: 100%; text-align: left; margin-bottom: 16px; }
+        .input-group label { display: block; font-size: 12px; font-weight: 600; color: #64748b; margin-bottom: 6px; text-transform: uppercase; }
+        .input-group input { width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 12px; font-size: 14px; font-weight: 500; outline: none; background: #f8fafc; transition: 0.2s; }
+        .input-group input:focus { border-color: #6366f1; background: #ffffff; box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1); }
+        
+        .submit-pay-btn { width: 100%; background: #10b981; color: white; border: none; padding: 14px; border-radius: 14px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+        .submit-pay-btn:hover { background: #059669; }
+        .submit-pay-btn:active { transform: scale(0.98); }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div class="page-header">
+            <a href="dashboard.html" class="back-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <h1>VIP & Rules</h1>
+        </div>
+        
+        <div class="section-title">VIP Membership Plans</div>
+        <div class="vip-box">
+            <div class="vip-item">
+                <div class="plan-info">
+                    <span class="plan-name">24 HOURS / DEMO</span>
+                    <span class="plan-price">₹20</span>
+                </div>
+                <button class="buy-btn" onclick="openPaymentModal('24 HOURS DEMO', 20, '1day')">Buy Now</button>
+            </div>
+            <div class="vip-item">
+                <div class="plan-info">
+                    <span class="plan-name">1 Month VIP Access</span>
+                    <span class="plan-price">₹100</span>
+                </div>
+                <button class="buy-btn" onclick="openPaymentModal('1 Month VIP Access', 100, '1month')">Buy Now</button>
+            </div>
+            <div class="vip-item">
+                <div class="plan-info">
+                    <span class="plan-name">3 Months VIP Plan</span>
+                    <span class="plan-price">₹250</span>
+                </div>
+                <button class="buy-btn" onclick="openPaymentModal('3 Months VIP Plan', 250, '3months')">Buy Now</button>
+            </div>
+            <div class="vip-item">
+                <div class="plan-info">
+                    <span class="plan-name">6 Months VIP Plan</span>
+                    <span class="plan-price">₹450</span>
+                </div>
+                <button class="buy-btn" onclick="openPaymentModal('6 Months VIP Plan', 450, '6months')">Buy Now</button>
+            </div>
+        </div>
+
+        <div class="section-title">System Rules & Terms</div>
+        <div class="rules-box">
+            <div class="rule-item"><i class="fa-solid fa-crown"></i><p><strong>No Refund Policy:</strong> payment hone ke baad membership fee refund nahi hogi.</p></div>
+            <div class="rule-item"><i class="fa-solid fa-crown"></i><p><strong>Account Security:</strong> Login ID share na karein.</p></div>
+            <div class="rule-item"><i class="fa-solid fa-crown"></i><p><strong>Verification:</strong> Payment aane par pending payment ko successful yaad se kare.</p></div>
+            <div class="rule-item"><i class="fa-solid fa-crown"></i><p><strong>Instant Activation:</strong> Payment hone par Instant Vip access milega.</p></div>
+            <div class="rule-item"><i class="fa-solid fa-crown"></i><p><strong>Policy:</strong> Rules mein kabhi bhi badlav ho sakta hai.</p></div>
+            <div class="rule-item"><i class="fa-solid fa-crown"></i><p><strong>Renewal:</strong> Expiry se pehle renew karwayein.</p></div>
+        </div>
+
+    </div>
+
+    <div class="payment-modal" id="paymentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title" id="modalPlanTitle">Pay & Secure Access</span>
+                <button class="close-modal-btn" onclick="closePaymentModal()"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            
+            <div class="qr-container">
+                <img id="upiQrImage" src="" alt="Dynamic Secure UPI QR Code">
+            </div>
+            
+            <div class="upi-id-box" onclick="copyAdminUpi()" id="upiStringContainer">
+                <i class="fa-solid fa-wallet"></i> <span id="adminUpiText">Loading UPI ID...</span> <i class="fa-regular fa-copy" style="margin-left: auto; font-size: 11px;"></i>
+            </div>
+            
+            <div class="input-group">
+                <label>Enter 12-Digit Ref / UTR Number</label>
+                <input type="number" id="utrInputField" placeholder="Enter Ref / UTR Number here..." oninput="javascript: if (this.value.length > 12) this.value = this.value.slice(0, 12);">
+            </div>
+            
+            <button class="submit-pay-btn" onclick="submitPaymentRequest()">
+                <i class="fa-solid fa-shield-checkmark"></i> Submit Verification
+            </button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBMwxuK9mo7gu3jsVD8L2AiHmI3aBsUvtU",
+            authDomain: "flowturnament.firebaseapp.com",
+            databaseURL: "https://flowturnament-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "flowturnament",
+            storageBucket: "flowturnament.firebasestorage.app",
+            messagingSenderId: "452539677386",
+            appId: "1:452539677386:web:8c6ee975e5446bf1ef1233"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        let currentSelectedPlan = {};
+        let currentUserData = null;
+        let merchantUpiId = "yourupi@ybl"; // Default fallback UPI handle
+
+        // Check authentication state & pull active details
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                database.ref('users/' + user.uid).once('value').then((snapshot) => {
+                    if (snapshot.exists()) {
+                        currentUserData = snapshot.val();
+                        currentUserData.uid = user.uid;
+                    }
+                });
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // Fetch dynamic system merchant UPI ID from database configuration node
+        database.ref('config/merchantUpi').on('value', (snapshot) => {
+            if(snapshot.exists()){
+                merchantUpiId = snapshot.val();
+            }
+            document.getElementById("adminUpiText").innerText = merchantUpiId;
+        });
+
+        function openPaymentModal(planName, price, durationKey) {
+            if(!currentUserData) {
+                alert("Session syncing... Please wait a second.");
+                return;
+            }
+            
+            currentSelectedPlan = { name: planName, price: price, duration: durationKey };
+            
+            document.getElementById("modalPlanTitle").innerText = `${planName} - Total ₹${price}`;
+            document.getElementById("utrInputField").value = "";
+            
+            // Build dynamic automated UPI Intent string for standard banking QR systems
+            const encodedBusinessName = encodeURIComponent("VIP Membership");
+            const upiIntentString = `upi://pay?pa=${merchantUpiId}&pn=${encodedBusinessName}&am=${price}&cu=INR`;
+            
+            // Generate instantly via cloud QR dynamic render engine
+            document.getElementById("upiQrImage").src = `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(upiIntentString)}`;
+            
+            document.getElementById("paymentModal").classList.add("active");
+        }
+
+        function closePaymentModal() {
+            document.getElementById("paymentModal").classList.remove("active");
+        }
+
+        function copyAdminUpi() {
+            navigator.clipboard.writeText(merchantUpiId).then(() => {
+                alert("UPI ID copied successfully!");
+            });
+        }
+
+        function submitPaymentRequest() {
+            const utrValue = document.getElementById("utrInputField").value.trim();
+            
+            if (utrValue.length !== 12) {
+                alert("Error: Please provide a valid 12-Digit Banking UTR / Reference number.");
+                return;
+            }
+            
+            const timestamp = Date.now();
+            const requestPayload = {
+                uid: currentUserData.uid,
+                ownerPathId: currentUserData.ownerPathId || "N/A",
+                username: currentUserData.username || "Anonymous User",
+                planName: currentSelectedPlan.name,
+                planPrice: currentSelectedPlan.price,
+                planDuration: currentSelectedPlan.duration,
+                utrNumber: utrValue,
+                status: "pending",
+                createdAt: timestamp
+            };
+            
+            // Push structured request node directly into administrative queue
+            database.ref('requests/' + utrValue).set(requestPayload)
+                .then(() => {
+                    alert("Success! Your transaction details have been submitted. VIP access will activate as soon as the administrator verifies the payment.");
+                    closePaymentModal();
+                })
+                .catch((err) => {
+                    alert("Database Error: " + err.message);
+                });
+        }
+    </script>
+</body>
+</html>

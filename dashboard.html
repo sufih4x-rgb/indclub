@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clean Navigation Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            min-height: 100vh;
+            padding: 40px 60px;
+        }
+
+        /* Top Header Area */
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+        }
+
+        .main-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+        }
+
+        .profile-container {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .badge-notification {
+            background: #ff4d4d;
+            color: white;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border: 2px solid #fff;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Ultra Premium URL Copy Section */
+        .url-section-container {
+            margin-bottom: 35px;
+            max-width: 100%;
+        }
+
+        .url-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+            position: relative;
+        }
+
+        .url-label-left { display: flex; align-items: center; gap: 6px; }
+        .url-label i { color: #6366f1; font-size: 14px; }
+
+        /* VIP Badge Styles */
+        .vip-badge {
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            user-select: none;
+        }
+        .vip-on { background: #dcfce7; color: #16a34a; }
+        .vip-off { background: #fee2e2; color: #dc2626; }
+        .vip-warning { background: #ffedd5; color: #ea580c; } /* 7 days warning color */
+
+        /* Custom VIP Time Tooltip/Box */
+        .vip-timer-box {
+            position: absolute;
+            right: 0;
+            top: -35px;
+            background: #1e293b;
+            color: #ffffff;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            display: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+        .vip-timer-box::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            right: 15px;
+            width: 8px;
+            height: 8px;
+            background: #1e293b;
+            transform: rotate(45deg);
+        }
+
+        .url-copy-box {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 12px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 25px -5px rgba(163, 177, 198, 0.15), 0 4px 10px -3px rgba(163, 177, 198, 0.07);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* Subtle focus glow on the box */
+        .url-copy-box:hover {
+            border-color: #cbd5e1;
+            box-shadow: 0 12px 30px -5px rgba(163, 177, 198, 0.22);
+        }
+
+        .url-text-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .url-icon-globe {
+            color: #6366f1;
+            background: #e0e7ff;
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+
+        .url-text-display {
+            font-size: 14px;
+            color: #334155;
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            user-select: all;
+        }
+
+        .url-copy-btn {
+            background: #6366f1;
+            color: #ffffff;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            margin-left: 10px;
+        }
+
+        .url-copy-btn:hover {
+            background: #4f46e5;
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .url-copy-btn:active {
+            transform: scale(0.96);
+        }
+
+        /* Copied State Styling */
+        .url-copy-btn.success-state {
+            background: #10b981 !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2) !important;
+        }
+
+        /* VIP Locked UI Style modifications */
+        .url-copy-box.vip-locked-box {
+            cursor: pointer;
+            background: #fafafa;
+            border: 1px dashed #ef4444;
+        }
+        .url-copy-box.vip-locked-box .url-icon-globe {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+        .url-copy-box.vip-locked-box .url-text-display {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        /* Full Screen Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        /* Clickable Card Link Styling */
+        .card-link {
+            text-decoration: none;
+            color: inherit;
+        }
+
+        /* Box Design - Updated for Premium Side-by-Side Horizontal Look */
+        .card-item {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 22px 24px;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 16px;
+            height: 100px; 
+            border: 1px solid rgba(226, 232, 240, 0.7); 
+            box-shadow: 0 4px 20px rgba(163, 177, 198, 0.1); 
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+
+        /* Smooth Lift Effect on Hover */
+        .card-link:hover .card-item {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(163, 177, 198, 0.2);
+            border-color: rgba(203, 213, 225, 0.8);
+        }
+
+        /* Icon Micro-Interaction on Card Hover */
+        .card-link:hover .icon-box {
+            transform: scale(1.08);
+        }
+
+        /* High Quality Enhanced Premium Icon Wrapper */
+        .icon-box {
+            width: 54px; 
+            height: 54px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            transition: transform 0.25s ease;
+            box-shadow: inset 0 -2px 6px rgba(0,0,0,0.03), 0 4px 10px rgba(0,0,0,0.02);
+            flex-shrink: 0;
+        }
+
+        /* Text Styling Inside Horizontal Box */
+        .text-box {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .text-box h3 {
+            font-size: 16px; 
+            font-weight: 600;
+            color: #1e293b; 
+            margin-bottom: 2px;
+            line-height: 1.2;
+        }
+
+        .text-box span {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 500;
+            line-height: 1.2;
+        }
+
+        /* Unique Color Schemes with subtle premium overlay effects */
+        .box-upi .icon-box { background: linear-gradient(135deg, #f5f7ff, #eef2ff); color: #4f46e5; border: 1px solid rgba(79, 70, 229, 0.1); }
+        .box-history .icon-box { background: linear-gradient(135deg, #f0fdf4, #ecfdf5); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.1); }
+        .box-rank .icon-box { background: linear-gradient(135deg, #fffaf5, #fff7ed); color: #f97316; border: 1px solid rgba(249, 115, 22, 0.1); }
+        .box-notice .icon-box { background: linear-gradient(135deg, #f0fdf4, #e6fffa); color: #14b8a6; border: 1px solid rgba(20, 184, 166, 0.1); }
+        .box-support .icon-box { background: linear-gradient(135deg, #fdf2f8, #fce7f3); color: #ec4899; border: 1px solid rgba(236, 72, 153, 0.1); }
+        .box-admin .icon-box { background: linear-gradient(135deg, #fef2f2, #ffe4e4); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.1); }
+
+        /* Responsive spacing */
+        @media (max-width: 768px) {
+            body { padding: 24px; }
+            .main-header h1 { font-size: 26px; }
+            .url-copy-box { padding: 10px 12px; }
+            .url-text-display { font-size: 13px; }
+            .card-item { height: 90px; padding: 16px; }
+            .icon-box { width: 46px; height: 46px; font-size: 18px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-header">
+        <h1>Dashboard</h1>
+        <div class="profile-container">
+            <div class="user-avatar">
+                <img src="https://i.postimg.cc/02FxZgv4/Untitled-May-25-2026-at-00-00-25-(1).png" alt="Profile">
+            </div>
+        </div>
+    </div>
+
+    <div class="url-section-container">
+        <div class="url-label">
+            <span class="url-label-left"><i class="fa-solid fa-link"></i> Web URL</span>
+            <div id="vipTimerBox" class="vip-timer-box">Loading...</div>
+            <span id="vipStatusBadge" class="vip-badge" onclick="toggleVipTimer()">Loading...</span>
+        </div>
+        <div class="url-copy-box" id="urlBoxContainer">
+            <div class="url-text-wrapper" id="urlTextWrapper">
+                <div class="url-icon-globe" id="urlGlobeIcon">
+                    <i class="fa-solid fa-globe"></i>
+                </div>
+                <span class="url-text-display" id="webUrlText">Loading personalized URL...</span>
+            </div>
+            <button class="url-copy-btn" id="copyBtn" onclick="copyLinkText()">
+                <i class="fa-regular fa-copy"></i> <span id="btnText">Copy</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        <a href="upi.html" class="card-link">
+            <div class="card-item box-upi">
+                <div class="icon-box">
+                    <i class="fa-solid fa-wallet"></i>
+                </div>
+                <div class="text-box">
+                    <h3>UPI SETUP</h3>
+                    <span>Manage UPI IDs</span>
+                </div>
+            </div>
+        </a>
+
+        <a href="#" id="paymentHistoryLink" class="card-link">
+            <div class="card-item box-history">
+                <div class="icon-box">
+                    <i class="fa-solid fa-history"></i>
+                </div>
+                <div class="text-box">
+                    <h3>PAYMENT HISTORY</h3>
+                    <span>View all transactions</span>
+                </div>
+            </div>
+        </a>
+
+        <a href="topup.html" class="card-link">
+            <div class="card-item box-rank">
+                <div class="icon-box">
+                    <i class="fa-solid fa-store"></i>
+                </div>
+                <div class="text-box">
+                    <h3>Top-Up Hubs</h3>
+                    <span>Switch Product Lines</span>
+                </div>
+            </div>
+        </a>
+
+        <a href="notice.html" class="card-link">
+            <div class="card-item box-notice">
+                <div class="icon-box">
+                    <i class="fa-solid fa-bullhorn"></i>
+                </div>
+                <div class="text-box">
+                    <h3>NOTICE</h3>
+                    <span>Updates & Guidelines</span>
+                </div>
+            </div>
+        </a>
+
+        <a href="profile.html" class="card-link">
+            <div class="card-item box-support">
+                <div class="icon-box">
+                    <i class="fa-solid fa-user"></i>
+                </div>
+                <div class="text-box">
+                    <h3>MY PROFILE</h3>
+                    <span>View & Edit Details</span>
+                </div>
+            </div>
+        </a>
+
+        <a href="rank.html" id="adminPanelLink" class="card-link">
+            <div class="card-item box-admin">
+                <div class="icon-box">
+                    <i class="fa-solid fa-trophy"></i>
+                </div>
+                <div class="text-box">
+                    <h3>LEADERBOARD</h3>
+                    <span>check rank & score</span>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBMwxuK9mo7gu3jsVD8L2AiHmI3aBsUvtU",
+            authDomain: "flowturnament.firebaseapp.com",
+            databaseURL: "https://flowturnament-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "flowturnament",
+            storageBucket: "flowturnament.firebasestorage.app",
+            messagingSenderId: "452539677386",
+            appId: "1:452539677386:web:8c6ee975e5446bf1ef1233"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        let vipCountdownInterval = null;
+        let vipExpiryTimestamp = null;
+        let baseDomainUrl = "https://sufih4x-rgb.github.io/Testing"; // Default backup link
+
+        // Admin panel config controller for dynamic URL configuration
+        database.ref('globalConfig/baseDomain').on('value', (snapshot) => {
+            if (snapshot.exists()) {
+                baseDomainUrl = snapshot.val();
+            }
+        });
+
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                // Fetching ownerPathId and vipStatus
+                database.ref('users/' + user.uid).on('value', (snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        const exactPathCode = data.ownerPathId;
+                        
+                        // Realtime database check for expiry timestamp
+                        vipExpiryTimestamp = data.vipExpiry; // Expected value format: Timestamp in millisecond
+                        
+                        // Client-side expiry validation logic
+                        const now = Date.now();
+                        let isVip = data.vipStatus === "on";
+                        
+                        // Auto deactivate checking based on time
+                        if (vipExpiryTimestamp && now >= vipExpiryTimestamp) {
+                            isVip = false;
+                            // Automatic database value correction if expired
+                            database.ref('users/' + user.uid).update({ vipStatus: "off" });
+                        }
+
+                        // Update Links
+                        document.getElementById("paymentHistoryLink").href = `history.html?id=${exactPathCode}`;
+                        document.getElementById("adminPanelLink").href = `admin.html?id=${exactPathCode}`;
+
+                        const badge = document.getElementById("vipStatusBadge");
+                        const urlBox = document.getElementById("urlBoxContainer");
+                        const urlText = document.getElementById("webUrlText");
+                        const copyBtn = document.getElementById("copyBtn");
+                        const globeIcon = document.getElementById("urlGlobeIcon");
+
+                        if (isVip) {
+                            // Update URL Normally using admin controlled domain path
+                            const userUniqueUrl = `${baseDomainUrl}?id=${exactPathCode}`;
+                            urlText.innerText = userUniqueUrl;
+                            
+                            // Reset copy box configurations to normal state
+                            urlBox.className = "url-copy-box";
+                            urlBox.onclick = null;
+                            copyBtn.style.display = "flex";
+                            globeIcon.innerHTML = `<i class="fa-solid fa-globe"></i>`;
+
+                            // Manage Badges colors dynamically based on days left
+                            if (vipExpiryTimestamp) {
+                                const timeLeft = vipExpiryTimestamp - now;
+                                const sevenDaysInMs = 7 * 24 * 60 * 60 * 1000;
+                                
+                                if (timeLeft <= sevenDaysInMs) {
+                                    badge.innerText = "VIP ON";
+                                    badge.className = "vip-badge vip-warning";
+                                } else {
+                                    badge.innerText = "VIP ON";
+                                    badge.className = "vip-badge vip-on";
+                                }
+                            } else {
+                                badge.innerText = "VIP ON";
+                                badge.className = "vip-badge vip-on";
+                            }
+
+                            // Initialize countdown handler
+                            startVipCountdown();
+
+                        } else {
+                            // VIP OFF STATE HANDLER
+                            badge.innerText = "VIP OFF";
+                            badge.className = "vip-badge vip-off";
+                            
+                          // Hide real URL and turn the box into a premium locked link button
+                            urlText.innerText = "Click and Buy VIP";
+                            globeIcon.innerHTML = `<i class="fa-solid fa-lock"></i>`;
+                            copyBtn.style.display = "none";
+                            
+                            urlBox.className = "url-copy-box vip-locked-box";
+                            urlBox.onclick = function() {
+                                window.location.href = "vipbuy.html";
+                            };
+                            
+                            document.getElementById("vipTimerBox").style.display = "none";
+                            if (vipCountdownInterval) clearInterval(vipCountdownInterval);
+                        }
+                    }
+                }, (err) => console.error(err));
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        function startVipCountdown() {
+            if (vipCountdownInterval) clearInterval(vipCountdownInterval);
+            
+            const timerBox = document.getElementById("vipTimerBox");
+            
+            function updateTimerString() {
+                if (!vipExpiryTimestamp) {
+                    timerBox.innerText = "Lifetime Access";
+                    return;
+                }
+                
+                const now = Date.now();
+                const diff = vipExpiryTimestamp - now;
+                
+                if (diff <= 0) {
+                    timerBox.innerText = "Expired";
+                    clearInterval(vipCountdownInterval);
+                    return;
+                }
+                
+                const oneDayInMs = 24 * 60 * 60 * 1000;
+                
+                if (diff > oneDayInMs) {
+                    // Calculative total days logic instead of date rendering
+                    const totalDaysLeft = Math.ceil(diff / oneDayInMs);
+                    timerBox.innerText = `${totalDaysLeft} Days Left`;
+                } else {
+                  // Core dynamic clock layout render if < 24 Hours remain
+                    let totalSeconds = Math.floor(diff / 1000);
+                    let hours = Math.floor(totalSeconds / 3600);
+                    totalSeconds %= 3600;
+                    let minutes = Math.floor(totalSeconds / 60);
+                    let seconds = totalSeconds % 60;
+                    
+                    // Format strings correctly according to exact request instructions
+                    let formattedMinutes = minutes < 10 ? "0" + minutes : minutes;
+                    
+                    timerBox.innerText = `${hours}:${formattedMinutes}:${seconds}`;
+                }
+            }
+            
+            updateTimerString();
+            vipCountdownInterval = setInterval(updateTimerString, 1000);
+        }
+
+        function toggleVipTimer() {
+            const timerBox = document.getElementById("vipTimerBox");
+            const badgeText = document.getElementById("vipStatusBadge").innerText;
+            
+            if (badgeText === "LOADING..." || badgeText === "VIP OFF") return;
+            
+            if (timerBox.style.display === "block") {
+                timerBox.style.display = "none";
+            } else {
+                timerBox.style.display = "block";
+            }
+        }
+
+        function copyLinkText() {
+            var urlText = document.getElementById("webUrlText").innerText;
+            var btnText = document.getElementById("btnText");
+            var copyBtn = document.getElementById("copyBtn");
+            if(urlText.startsWith("Loading") || urlText === "Click and Buy VIP") return;
+            navigator.clipboard.writeText(urlText).then(function() {
+                copyBtn.classList.add("success-state");
+                btnText.innerText = "Copied!";
+                copyBtn.querySelector('i').className = "fa-solid fa-check-double";
+                setTimeout(function() {
+                    copyBtn.classList.remove("success-state");
+                    btnText.innerText = "Copy";
+                    copyBtn.querySelector('i').className = "fa-regular fa-copy";
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>

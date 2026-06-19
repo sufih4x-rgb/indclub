@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile & Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: #f7f9fc; min-height: 100vh; padding: 24px 20px; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 16px; }
+        .page-header { display: flex; align-items: center; gap: 16px; margin-bottom: 5px; }
+        .back-btn { width: 40px; height: 40px; background: #ffffff; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #2c3e50; text-decoration: none; box-shadow: 0 4px 12px rgba(163, 177, 198, 0.15); transition: 0.2s; }
+        .back-btn:hover { background: #ef4444; color: white; }
+        .page-header h1 { font-size: 22px; font-weight: 700; color: #1a1a1a; }
+        .avatar-section { background: #ffffff; border-radius: 24px; padding: 24px; text-align: center; box-shadow: 0 8px 20px rgba(163, 177, 198, 0.05); border: 1px solid rgba(226, 232, 240, 0.8); display: flex; flex-direction: column; align-items: center; gap: 12px; }
+        .avatar-container { position: relative; width: 100px; height: 100px; }
+        .avatar-container img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; border: 3px solid #ef4444; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .avatar-edit-btn { position: absolute; bottom: 0; right: 0; width: 32px; height: 32px; background: #ef4444; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; cursor: pointer; border: 2px solid #ffffff; }
+        #avatarUpload { display: none; }
+        .profile-form { background: #ffffff; border-radius: 24px; padding: 24px; box-shadow: 0 8px 20px rgba(163, 177, 198, 0.05); border: 1px solid rgba(226, 232, 240, 0.8); display: flex; flex-direction: column; gap: 18px; }
+        .input-group { display: flex; flex-direction: column; gap: 8px; }
+        .input-group label { font-size: 13px; font-weight: 600; color: #475569; }
+        .field-wrapper { position: relative; display: flex; align-items: center; }
+        .field-wrapper i { position: absolute; left: 16px; color: #94a3b8; font-size: 15px; }
+        .field-wrapper input { width: 100%; padding: 12px 16px 12px 45px; border: 1px solid #cbd5e1; border-radius: 14px; font-size: 14px; font-weight: 500; outline: none; color: #1e293b; }
+        .field-wrapper input:focus { border-color: #ef4444; }
+        .field-wrapper input[readonly] { background: #f8fafc; color: #64748b; cursor: not-allowed; }
+        .upi-lock-icon { position: absolute; right: 16px; color: #94a3b8; font-size: 13px; }
+        .submit-btn { background: #ef4444; color: white; border: none; padding: 14px; border-radius: 14px; font-size: 15px; font-weight: 600; cursor: pointer; }
+
+        /* Custom Dynamic Modal Styling */
+        #modalOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal-box { background: white; width: 100%; max-width: 320px; border-radius: 20px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.2); text-align: center; }
+        .modal-header { padding: 20px; font-size: 40px; }
+        .modal-body { padding: 20px; }
+        .modal-body h3 { color: #1a1a1a; margin-bottom: 8px; }
+        .modal-body p { color: #64748b; margin-bottom: 20px; font-size: 14px; }
+        .modal-close-btn { width: 100%; border: none; padding: 12px; font-weight: 600; cursor: pointer; color: white; transition: 0.2s; }
+        
+        /* Modal Variants */
+        .modal-warning .modal-header { background: #ef4444; color: white; }
+        .modal-warning .modal-close-btn { background: #ef4444; }
+        .modal-success .modal-header { background: #22c55e; color: white; }
+        .modal-success .modal-close-btn { background: #22c55e; }
+    </style>
+</head>
+<body>
+
+    <div id="modalOverlay">
+        <div id="modalBox" class="modal-box">
+            <div class="modal-header" id="modalHeader"><i id="modalIcon" class="fa-solid"></i></div>
+            <div class="modal-body">
+                <h3 id="modalTitle">Title</h3>
+                <p id="modalMessage">Message</p>
+                <button class="modal-close-btn" onclick="closeModal()">CLOSE</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <div class="page-header">
+            <a href="dashboard.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+            <h1>My Profile</h1>
+        </div>
+
+        <div class="avatar-section">
+            <div class="avatar-container">
+                <img id="profileImage" src="https://i.postimg.cc/dt0C1Syp/07fb3452c4640d881a16d08c2e314f3e.jpg" alt="Avatar">
+                <label for="avatarUpload" class="avatar-edit-btn"><i class="fa-solid fa-camera"></i></label>
+                <input type="file" id="avatarUpload" accept="image/*">
+            </div>
+            <h2 id="displayUsername">Loading...</h2>
+            <span>Verified Member</span>
+        </div>
+
+        <form class="profile-form" id="profileForm">
+            <div class="input-group">
+                <label for="username">Username</label>
+                <div class="field-wrapper"><i class="fa-solid fa-user"></i><input type="text" id="username" readonly></div>
+            </div>
+            <div class="input-group">
+                <label for="email">Email Address</label>
+                <div class="field-wrapper"><i class="fa-solid fa-envelope"></i><input type="email" id="email" readonly></div>
+            </div>
+            <div class="input-group">
+                <label for="balance">Account Balance</label>
+                <div class="field-wrapper"><i class="fa-solid fa-wallet"></i><input type="text" id="balance" readonly></div>
+            </div>
+            <div class="input-group">
+                <label>Registered UPI ID</label>
+                <div class="field-wrapper">
+                    <i class="fa-solid fa-at"></i>
+                    <input type="text" id="upiId" readonly>
+                    <i class="fa-solid fa-lock upi-lock-icon"></i>
+                </div>
+            </div>
+            <button type="submit" class="submit-btn">Save Changes</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref as dbRef, onValue, update } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+        // Logic to trigger modal
+        window.showModal = (type, title, msg) => {
+            const modalBox = document.getElementById('modalBox');
+            const icon = document.getElementById('modalIcon');
+            modalBox.className = 'modal-box ' + (type === 'success' ? 'modal-success' : 'modal-warning');
+            icon.className = 'fa-solid ' + (type === 'success' ? 'fa-check' : 'fa-triangle-exclamation');
+            document.getElementById('modalTitle').innerText = title;
+            document.getElementById('modalMessage').innerText = msg;
+            document.getElementById('modalOverlay').style.display = 'flex';
+        }
+        window.closeModal = () => document.getElementById('modalOverlay').style.display = 'none';
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBMwxuK9mo7gu3jsVD8L2AiHmI3aBsUvtU",
+            authDomain: "flowturnament.firebaseapp.com",
+            databaseURL: "https://flowturnament-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "flowturnament",
+            storageBucket: "flowturnament.firebasestorage.app",
+            messagingSenderId: "452539677386",
+            appId: "1:452539677386:web:8c6ee975e5446bf1ef1233"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth();
+        const db = getDatabase();
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const userRef = dbRef(db, 'users/' + user.uid);
+                onValue(userRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        document.getElementById('username').value = data.username || "";
+                        document.getElementById('displayUsername').innerText = data.username || "User";
+                        document.getElementById('email').value = data.email || "";
+                        document.getElementById('balance').value = "₹" + (data.balance || "0");
+                        document.getElementById('upiId').value = data.upiId || "Not Set";
+                        if(data.profilePic) document.getElementById('profileImage').src = data.profilePic;
+                    }
+                });
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        document.getElementById('avatarUpload').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                const base64String = reader.result;
+                const user = auth.currentUser;
+                if (user) {
+                    update(dbRef(db, 'users/' + user.uid), { profilePic: base64String })
+                    .then(() => showModal("success", "Success!", "Avatar Updated Successfully!"));
+                }
+            };
+            reader.readAsDataURL(file);
+        });
+
+        document.getElementById('profileForm').onsubmit = (e) => {
+            e.preventDefault();
+            const user = auth.currentUser;
+            if (user) {
+                update(dbRef(db, 'users/' + user.uid), {
+                    username: document.getElementById('username').value
+                }).then(() => showModal("success", "Success!", "Profile Updated Successfully!"));
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notice Board & System Rules</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+        body { background-color: #f7f9fc; min-height: 100vh; padding: 24px 20px; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 480px; display: flex; flex-direction: column; gap: 16px; }
+        .page-header { display: flex; align-items: center; gap: 16px; margin-bottom: 5px; }
+        .back-btn { width: 40px; height: 40px; background: #ffffff; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: #2c3e50; text-decoration: none; box-shadow: 0 4px 12px rgba(163, 177, 198, 0.15); }
+        .page-header h1 { font-size: 22px; font-weight: 700; color: #1a1a1a; }
+        .section-title { font-size: 14px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 5px; }
+        .notice-list { display: flex; flex-direction: column; gap: 14px; }
+        .notice-card { background: #ffffff; border-radius: 20px; padding: 20px; box-shadow: 0 8px 20px rgba(163, 177, 198, 0.08); border: 1px solid rgba(226, 232, 240, 0.8); display: flex; gap: 16px; position: relative; }
+        .notice-icon-box { width: 44px; height: 44px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+        .notice-content { display: flex; flex-direction: column; gap: 4px; }
+        .notice-content h3 { font-size: 15px; font-weight: 600; color: #1e293b; }
+        .notice-content p { font-size: 13px; color: #475569; line-height: 1.5; }
+        .notice-date { font-size: 11px; color: #94a3b8; font-weight: 500; margin-top: 2px; }
+        .notice-alert { border-left: 5px solid #ef4444; } .notice-alert .notice-icon-box { background: #fef2f2; color: #ef4444; }
+        .notice-info { border-left: 5px solid #3b82f6; } .notice-info .notice-icon-box { background: #eff6ff; color: #3b82f6; }
+        .notice-success { border-left: 5px solid #10b981; } .notice-success .notice-icon-box { background: #ecfdf5; color: #10b981; }
+        .rules-box { background: #ffffff; border-radius: 20px; padding: 20px; box-shadow: 0 8px 20px rgba(163, 177, 198, 0.08); border: 1px solid rgba(226, 232, 240, 0.8); }
+        .rule-item { display: flex; gap: 12px; padding: 12px 0; border-bottom: 1px dashed #e2e8f0; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <div class="page-header">
+            <a href="index.html" class="back-btn"><i class="fa-solid fa-arrow-left"></i></a>
+            <h1>Notice Board</h1>
+        </div>
+
+        <div class="section-title">Latest Announcements</div>
+        <div class="notice-list" id="notice-list">
+            </div>
+
+        <div class="section-title">OWNERSHIP</div>
+        <div class="rules-box">
+            <div class="rule-item"><i class="fa-solid fa-circle-check" style="color: #14b8a6;"></i><p>AGAR KAISE KO KHUD KA WEBSITE BANVANA HO TO DM KARO</p></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBMwxuK9mo7gu3jsVD8L2AiHmI3aBsUvtU",
+            authDomain: "flowturnament.firebaseapp.com",
+            databaseURL: "https://flowturnament-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "flowturnament",
+            storageBucket: "flowturnament.firebasestorage.app",
+            messagingSenderId: "452539677386",
+            appId: "1:452539677386:web:8c6ee975e5446bf1ef1233"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+        const list = document.getElementById("notice-list");
+
+        onValue(ref(db, 'notices'), (snapshot) => {
+            list.innerHTML = "";
+            const data = snapshot.val();
+            for (let id in data) {
+                let n = data[id];
+                list.innerHTML += `
+                <div class="notice-card notice-${n.type}">
+                    <div class="notice-icon-box"><i class="fa-solid ${n.icon}"></i></div>
+                    <div class="notice-content">
+                        <h3>${n.title}</h3>
+                        <p>${n.message}</p>
+                        <span class="notice-date">${n.date}</span>
+                    </div>
+                </div>`;
+            }
+        });
+    </script>
+</body>
+</html>

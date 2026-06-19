@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaderboard - Real Rankings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f7f9fc;
+            min-height: 100vh;
+            padding: 24px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* App Layout Container */
+        .app-container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Top Header Area */
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 5px;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            background: #ffffff;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2c3e50;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(163, 177, 198, 0.15);
+            transition: 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #f97316;
+            color: white;
+        }
+
+        .page-header h1 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        /* Linear Rankings Container */
+        .leaderboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        /* Standard Row Design for All Ranks */
+        .leaderboard-item {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 8px 20px rgba(163, 177, 198, 0.08);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            transition: all 0.2s ease;
+            
+            /* Premium Smooth Entry Animation */
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideUpFade {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .leaderboard-item:hover {
+            transform: translateY(-2px) !important;
+            border-color: #fed7aa;
+        }
+
+        .item-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .rank-index {
+            width: 32px;
+            font-size: 15px;
+            font-weight: 700;
+            color: #94a3b8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rank-index i {
+            font-size: 20px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .item-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid transparent;
+        }
+
+        .item-details h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #1e293b;
+            max-width: 180px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .item-details span {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .item-right .earnings-tag {
+            font-size: 16px;
+            font-weight: 700;
+            color: #10b981;
+        }
+        
+        /* Rank 1: Gold Theme Row */
+        .rank-1-row {
+            background: linear-gradient(91deg, #ffffff 60%, #fffbeb 100%);
+            border-color: #fde047;
+        }
+        .rank-1-row .rank-index { color: #eab308; }
+        .rank-1-row .item-avatar { border-color: #eab308; }
+        .rank-1-row .mini-crown {
+            position: absolute;
+            top: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #eab308;
+            font-size: 12px;
+        }
+
+        /* Rank 2: Silver Theme Row */
+        .rank-2-row {
+            background: linear-gradient(91deg, #ffffff 60%, #f8fafc 100%);
+            border-color: #cbd5e1;
+        }
+        .rank-2-row .rank-index { color: #94a3b8; }
+        .rank-2-row .item-avatar { border-color: #cbd5e1; }
+
+        /* Rank 3: Bronze Theme Row */
+        .rank-3-row {
+            background: linear-gradient(91deg, #ffffff 60%, #fff7ed 100%);
+            border-color: #fed7aa;
+        }
+        .rank-3-row .rank-index { color: #ca8a04; }
+        .rank-3-row .item-avatar { border-color: #fed7aa; }
+
+        .loading-text {
+            text-align: center;
+            font-size: 14px;
+            color: #7f8c8d;
+            padding: 40px 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        
+        <div class="page-header">
+            <a href="dashboard.html" class="back-btn">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <h1>Leaderboard</h1>
+        </div>
+
+        <div class="leaderboard-list" id="leaderboardListContainer">
+            <div class="loading-text">
+                <i class="fa-solid fa-spinner fa-spin" style="color: #f97316;"></i>
+                <br><br>Fetching top players & balance rankings...
+            </div>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBMwxuK9mo7gu3jsVD8L2AiHmI3aBsUvtU",
+            authDomain: "flowturnament.firebaseapp.com",
+            databaseURL: "https://flowturnament-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "flowturnament",
+            storageBucket: "flowturnament.firebasestorage.app",
+            messagingSenderId: "452539677386",
+            appId: "1:452539677386:web:8c6ee975e5446bf1ef1233"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const leaderboardContainer = document.getElementById('leaderboardListContainer');
+
+        const fallbackAvatars = [
+            "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&q=80&w=100",
+            "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100",
+            "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=100",
+            "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=100",
+            "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&q=80&w=100"
+        ];
+
+        function fetchLeaderboardByBalance() {
+            // Seedhe users node ko fetch kar rahe hain real-time me
+            database.ref('users').on('value', (snapshot) => {
+                if (snapshot.exists()) {
+                    let leaderBoardArray = [];
+
+                    snapshot.forEach((childSnapshot) => {
+                        const uid = childSnapshot.key;
+                        const data = childSnapshot.val();
+                        
+                        // User ka naam username ya fir default layout fallback se uthayenge
+                        const pName = data.username || data.name || "Unknown Player";
+                        
+                        // Balance parsing logic (agar string hai toh float banayega, nahi toh directly value read karega)
+                        let currentBalance = 0;
+                        if (data.balance !== undefined) {
+                            currentBalance = parseFloat(String(data.balance).replace(/[^\d.-]/g, '')) || 0;
+                        }
+
+                        // Wahi users array me jayenge jinka balance 0 se upar hai (Leaderboard clean rakhne ke liye)
+                        if (currentBalance > 0) {
+                            leaderBoardArray.push({
+                                uid: uid,
+                                name: pName,
+                                balance: currentBalance
+                            });
+                        }
+                    });
+
+                    // HIGH TO LOW SORTING (Sabse zyada balance waala user sabse upar)
+                    leaderBoardArray.sort((a, b) => b.balance - a.balance);
+
+                    if (leaderBoardArray.length === 0) {
+                        leaderboardContainer.innerHTML = '<div class="loading-text">No active users with wallet balance to display.</div>';
+                        return;
+                    }
+
+                    let htmlBuilder = "";
+
+                    leaderBoardArray.forEach((player, idx) => {
+                        const currentRank = idx + 1;
+                        let rowClassModifier = "";
+                        let rankDisplayNode = "";
+                        
+                        let avatarUrl = fallbackAvatars[idx % fallbackAvatars.length];
+
+                        // Top 3 positions styling selectors
+                        if (currentRank === 1) {
+                            rowClassModifier = "rank-1-row";
+                            rankDisplayNode = `<i class="fa-solid fa-trophy"></i>`;
+                        } else if (currentRank === 2) {
+                            rowClassModifier = "rank-2-row";
+                            rankDisplayNode = `<i class="fa-solid fa-medal"></i>`;
+                        } else if (currentRank === 3) {
+                            rowClassModifier = "rank-3-row";
+                            rankDisplayNode = `<i class="fa-solid fa-award"></i>`;
+                        } else {
+                            rankDisplayNode = currentRank < 10 ? "0" + currentRank : currentRank;
+                        }
+
+                        // Staggered dynamic delays for premium box entries
+                        const animationDelay = (idx * 0.08).toFixed(2);
+
+                        htmlBuilder += `
+                            <div class="leaderboard-item ${rowClassModifier}" style="animation-delay: ${animationDelay}s;">
+                                <div class="item-left">
+                                    <div class="rank-index">
+                                        ${rankDisplayNode}
+                                    </div>
+                                    <div class="avatar-wrapper">
+                                        ${currentRank === 1 ? '<i class="fa-solid fa-crown mini-crown"></i>' : ''}
+                                        <img class="item-avatar" src="${avatarUrl}" alt="${player.name}">
+                                    </div>
+                                    <div class="item-details">
+                                        <h4>${player.name}</h4>
+                                        <span>Rank #${currentRank < 10 ? "0" + currentRank : currentRank} ${currentRank === 1 ? '• Top ' : ''}</span>
+                                    </div>
+                                </div>
+                                <div class="item-right">
+                                    <span class="earnings-tag">₹${player.balance.toLocaleString('en-IN')}</span>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    leaderboardContainer.innerHTML = htmlBuilder;
+
+                } else {
+                    leaderboardContainer.innerHTML = '<div class="loading-text">No users found in database.</div>';
+                }
+            }, (error) => {
+                leaderboardContainer.innerHTML = `<div class="loading-text" style="color:#ef4444;">Database Error: ${error.message}</div>`;
+            });
+        }
+
+        // Run instantly on load
+        fetchLeaderboardByBalance();
+    </script>
+</body>
+</html>

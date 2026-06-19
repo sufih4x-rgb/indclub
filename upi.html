@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update UPI Settings</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f7f9fc;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Settings Card Container */
+        .settings-card {
+            background: #ffffff;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 24px;
+            padding: 35px;
+            box-shadow: 0 15px 35px rgba(163, 177, 198, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            z-index: 1;
+        }
+
+        /* Back Button & Header */
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            background: #f0f2f5;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2c3e50;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            background: #e4e7eb;
+            transform: translateX(-2px);
+        }
+
+        .card-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        /* Icon Indicator */
+        .upi-visual-icon {
+            width: 65px;
+            height: 65px;
+            background: #eef2ff;
+            color: #4f46e5;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 25px;
+        }
+
+        /* Input Group Styling */
+        .input-block {
+            margin-bottom: 25px;
+        }
+
+        .input-block label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #34495e;
+            margin-bottom: 10px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 15px;
+            color: #a0aec0;
+            font-size: 16px;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 14px 16px 14px 45px;
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 15px;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.3s ease;
+            color: #2d3748;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Submit Button */
+        .save-btn {
+            width: 100%;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .save-btn:hover {
+            background: #3b31d3;
+            transform: translateY(-2px);
+        }
+
+        .save-btn:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        /* Security Note Info */
+        .security-note {
+            background: #f8fafc;
+            border-left: 4px solid #10b981;
+            padding: 15px;
+            border-radius: 0 12px 12px 0;
+            margin-top: 25px;
+            display: flex;
+            gap: 12px;
+        }
+
+        .security-note i {
+            color: #10b981;
+            font-size: 18px;
+            margin-top: 2px;
+        }
+
+        .security-note p {
+            font-size: 12px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        /* ========================================== */
+        /* CUSTOM ANIMATED POPUP MODAL STYLING       */
+        /* ========================================== */
+        
+        /* Modal Blur Overlay Backdrop */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(4px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* Trigger active state for overlay */
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        /* Success Box Window Content */
+        .success-modal {
+            background: #ffffff;
+            padding: 40px 30px;
+            border-radius: 24px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transform: scale(0.8) translateY(30px);
+            transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Trigger active state for modal inner */
+        .modal-overlay.active .success-modal {
+            transform: scale(1) translateY(0);
+        }
+
+        /* Pulsing Animated Success Checked Ring */
+        .success-ring {
+            width: 70px;
+            height: 70px;
+            background: #ecfdf5;
+            color: #10b981;
+            font-size: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+            position: relative;
+            animation: pulse-ring 2s infinite ease-in-out;
+        }
+
+        .success-modal h3 {
+            font-size: 22px;
+            color: #1e293b;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .success-modal p {
+            font-size: 14px;
+            color: #64748b;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        /* Close/Dismiss Button inside Modal */
+        .close-modal-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 12px 35px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+        .close-modal-btn:hover {
+            background: #059669;
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Ring Pulse keyframes */
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(16, 185, 129, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="settings-card">
+        <div class="card-header">
+            <a href="dashboard.html" class="back-btn" title="Back to Dashboard">
+                <i class="fa-solid fa-arrow-left"></i>
+            </a>
+            <h2>UPI Settings</h2>
+        </div>
+
+        <div class="upi-visual-icon">
+            <i class="fa-solid fa-wallet"></i>
+        </div>
+
+        <form id="upiForm" onsubmit="saveUpiToFirebase(event)">
+            
+            <div class="input-block">
+                <label for="upiId">Apni UPI ID Enter Karein</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-at"></i>
+                    <input type="text" id="upiId" placeholder="Loading dynamic data..." required disabled>
+                </div>
+            </div>
+
+            <button type="submit" class="save-btn" id="saveBtn" disabled>
+                <i class="fa-solid fa-check-double"></i> Update UPI ID
+            </button>
+        </form>
+
+        <div class="security-note">
+            <i class="fa-solid fa-shield-halved"></i>
+            <div>
+                <p style="font-weight: 600; color: #334155; margin-bottom: 2px;">Secure Payments</p>
+                <p>Kripya sahi UPI ID dalein. Aapka saara kamaya hua paisa isi account me direct transfer kiya jayega.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="successOverlay">
+        <div class="success-modal">
+            <div class="success-ring">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h3>UPI Updated!</h3>
+            <p>Aapki UPI ID successfully save ho gayi hai. Ab aap dashboard par wapas ja sakte hain.</p>
+            <button class="close-modal-btn" onclick="closeSuccessModal()">Great</button>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBMwxuK9mo7gu3jsVD8L2AiHmI3aBsUvtU",
+            authDomain: "flowturnament.firebaseapp.com",
+            databaseURL: "https://flowturnament-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "flowturnament",
+            storageBucket: "flowturnament.firebasestorage.app",
+            messagingSenderId: "452539677386",
+            appId: "1:452539677386:web:8c6ee975e5446bf1ef1233"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        let currentUser = null;
+        const overlay = document.getElementById('successOverlay');
+        const upiInput = document.getElementById('upiId');
+        const saveBtn = document.getElementById('saveBtn');
+
+        // Monitor Auth State and fetch pre-saved data
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                currentUser = user;
+                
+                // Realtime reference tracker: users/USER_UID/upiId
+                database.ref('users/' + user.uid + '/upiId').once('value')
+                    .then((snapshot) => {
+                        if (snapshot.exists()) {
+                            upiInput.value = snapshot.val();
+                        } else {
+                            upiInput.value = '';
+                        }
+                        upiInput.placeholder = "example@ybl, username@oksbi";
+                        upiInput.disabled = false;
+                        saveBtn.disabled = false;
+                    })
+                    .catch((err) => {
+                        console.error("Data load error: ", err);
+                    });
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+
+        // Submit data updates to current user node structural path references
+        function saveUpiToFirebase(event) {
+            event.preventDefault(); 
+            
+            if (!currentUser) return;
+
+            const upiValue = upiInput.value.trim();
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+            // SECURITY SAVE LAYER: users/USER_UID path ko target karke direct child fields update hongi
+            database.ref('users/' + currentUser.uid).update({
+                upiId: upiValue,
+                lastUpdated: firebase.database.ServerValue.TIMESTAMP
+            })
+            .then(() => {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> Update UPI ID';
+                overlay.classList.add('active'); 
+            })
+            .catch((error) => {
+                saveBtn.disabled = false;
+                saveBtn.innerHTML = '<i class="fa-solid fa-check-double"></i> Update UPI ID';
+                alert("Database Error: " + error.message);
+            });
+        }
+
+        function closeSuccessModal() {
+            overlay.classList.remove('active'); 
+        }
+    </script>
+
+</body>
+</html>

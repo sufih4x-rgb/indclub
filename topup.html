@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Select Game Store</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f8fafc;
+            min-height: 100vh;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .dashboard-container {
+            width: 100%;
+            max-width: 900px;
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 40px;
+            border: 1px solid rgba(226, 232, 240, 0.7);
+            box-shadow: 0 10px 30px rgba(163, 177, 198, 0.1);
+        }
+
+        .header-section {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header-section h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #0f172a;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .header-section p {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        /* Games Grid Layout */
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 25px;
+        }
+
+        .game-card {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 20px;
+            padding: 30px 20px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        /* Active Card (Free Fire) Styling */
+        .game-card.active-card {
+            background: linear-gradient(145deg, #ffffff, #f1f5f9);
+            border-color: #6366f1;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.05);
+        }
+
+        .game-card.active-card:hover {
+            transform: translateY(-8px);
+            border-color: #4f46e5;
+            box-shadow: 0 12px 25px rgba(99, 102, 241, 0.15);
+        }
+
+        /* Icon Design */
+        .game-icon-circle {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            transition: all 0.3s ease;
+        }
+
+        .active-card .game-icon-circle {
+            background: #eef2ff;
+            color: #6366f1;
+        }
+
+        .active-card:hover .game-icon-circle {
+            background: #6366f1;
+            color: #ffffff;
+            transform: scale(1.1);
+        }
+
+        .game-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .game-status-text {
+            font-size: 12px;
+            font-weight: 600;
+            color: #10b981;
+            background: #ecfdf5;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        /* Locked Card (Coming Soon) Styling */
+        .game-card.locked-card {
+            opacity: 0.7;
+            background: #f1f5f9;
+            border-color: #cbd5e1;
+            cursor: not-allowed;
+        }
+
+        .locked-card .game-icon-circle {
+            background: #e2e8f0;
+            color: #94a3b8;
+        }
+
+        .coming-soon-badge {
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            background: #e2e8f0;
+            padding: 4px 12px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        /* Footer Info */
+        .footer-note {
+            text-align: center;
+            margin-top: 35px;
+            font-size: 12px;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="dashboard-container">
+        <div class="header-section">
+            <h1><i class="fa-solid fa-gamepad" style="color: #6366f1;"></i> Select Game Top-Up Store</h1>
+            <p>Apne gaming store ko manage karne ke liye niche se game select karein</p>
+        </div>
+
+        <div class="games-grid">
+            
+            <a href="dashboard.html" class="game-card active-card">
+                <div class="game-icon-circle">
+                    <i class="fa-solid fa-fire-flame-curved"></i>
+                </div>
+                <div class="game-title">Free Fire (FF)</div>
+                <span class="game-status-text"><i class="fa-solid fa-circle-check"></i> Active Store</span>
+            </a>
+
+            <div class="game-card locked-card">
+                <div class="game-icon-circle">
+                    <i class="fa-solid fa-gun"></i>
+                </div>
+                <div class="game-title">BGMI / PUBG</div>
+                <span class="coming-soon-badge">Coming Soon</span>
+            </div>
+
+            <div class="game-card locked-card">
+                <div class="game-icon-circle">
+                    <i class="fa-solid fa-chess-rook"></i>
+                </div>
+                <div class="game-title">Clash of Clans</div>
+                <span class="coming-soon-badge">Coming Soon</span>
+            </div>
+
+            <div class="game-card locked-card">
+                <div class="game-icon-circle">
+                    <i class="fa-solid fa-shield-halved"></i>
+                </div>
+                <div class="game-title">Mobile Legends</div>
+                <span class="coming-soon-badge">Coming Soon</span>
+            </div>
+
+        </div>
+
+        <div class="footer-note">
+            <i class="fa-solid fa-lock"></i> New game modules will be integrated automatically in future updates.
+        </div>
+    </div>
+
+</body>
+</html>

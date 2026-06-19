@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome Back - FlowTurnament</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f7f9fc;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(163, 177, 198, 0.2);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        .auth-header p {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            display: block;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px 14px 46px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #1e293b;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            background: #ffffff;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: #6366f1;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auth-btn:hover {
+            background: #4f46e5;
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .auth-btn:active {
+            transform: scale(0.98);
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .auth-footer a {
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        /* Clean embedded status toast inside card */
+        .status-msg {
+            font-size: 13px;
+            font-weight: 500;
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+        }
+        .status-error { background: #fef2f2; color: #ef4444; border: 1px solid #fee2e2; }
+        .status-success { background: #ecfdf5; color: #10b981; border: 1px solid #d1fae5; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="auth-header">
+            <h2>Welcome Back</h2>
+            <p>Login to your FlowTurnament account</p>
+        </div>
+
+        <div id="statusBox" class="status-msg"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Email Address</label>
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-envelope"></i>
+                    <input type="email" id="logEmail" class="form-control" placeholder="name@example.com" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="logPassword" class="form-control" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <button type="submit" class="auth-btn" id="submitBtn">
+                <span>Sign In</span> <i class="fa-solid fa-right-to-bracket"></i>
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Don't have an account? <a href="register.html">Register</a>
+        </div>
+    </div>
+
+    <!-- Firebase Script v9+ (Compat Mode) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <script>
+        // Aapka Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBMwxuK9mo7gu3jsVD8L2AiHmI3aBsUvtU",
+            authDomain: "flowturnament.firebaseapp.com",
+            databaseURL: "https://flowturnament-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "flowturnament",
+            storageBucket: "flowturnament.firebasestorage.app",
+            messagingSenderId: "452539677386",
+            appId: "1:452539677386:web:8c6ee975e5446bf1ef1233"
+        };
+        
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        // Login Action
+        document.getElementById("loginForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById("logEmail").value;
+            const password = document.getElementById("logPassword").value;
+            const statusBox = document.getElementById("statusBox");
+            const submitBtn = document.getElementById("submitBtn");
+
+            // UI loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Logging in...';
+            statusBox.style.display = "none";
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    statusBox.className = "status-msg status-success";
+                    statusBox.innerText = "Login Successful! Loading dashboard...";
+                    statusBox.style.display = "block";
+                    
+                    setTimeout(() => {
+                        window.location.href = "dashboard.html"; // Redirecting to your dashboard page
+                    }, 1500);
+                })
+                .catch((error) => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span>Sign In</span> <i class="fa-solid fa-right-to-bracket"></i>';
+                    
+                    statusBox.className = "status-msg status-error";
+                    statusBox.innerText = error.message;
+                    statusBox.style.display = "block";
+                });
+        });
+    </script>
+</body>
+</html>

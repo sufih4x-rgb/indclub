@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - FlowTurnament</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background-color: #f7f9fc;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            background: #ffffff;
+            width: 100%;
+            max-width: 420px;
+            padding: 40px;
+            border-radius: 24px;
+            box-shadow: 0 15px 35px rgba(163, 177, 198, 0.2);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .auth-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 6px;
+        }
+
+        .auth-header p {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            display: block;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            left: 16px;
+            color: #94a3b8;
+            font-size: 16px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 16px 14px 46px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #1e293b;
+            font-weight: 500;
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            background: #ffffff;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        .auth-btn {
+            width: 100%;
+            padding: 14px;
+            background: #6366f1;
+            color: #ffffff;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.2);
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .auth-btn:hover {
+            background: #4f46e5;
+            box-shadow: 0 6px 16px rgba(99, 102, 241, 0.3);
+        }
+
+        .auth-btn:active {
+            transform: scale(0.98);
+        }
+
+        .auth-footer {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .auth-footer a {
+            color: #6366f1;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-footer a:hover {
+            text-decoration: underline;
+        }
+
+        .status-msg {
+            font-size: 13px;
+            font-weight: 500;
+            padding: 10px 14px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            text-align: center;
+        }
+        .status-error { background: #fef2f2; color: #ef4444; border: 1px solid #fee2e2; }
+        .status-success { background: #ecfdf5; color: #10b981; border: 1px solid #d1fae5; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="auth-header">
+            <h2>Join Us</h2>
+            <p>Create your FlowTurnament account</p>
+        </div>
+
+        <div id="statusBox" class="status-msg"></div>
+
+        <form id="registerForm">
+            <div class="form-group">
+                <label>Username</label>
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-user"></i>
+                    <input type="text" id="regUsername" class="form-control" placeholder="Enter username" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Email Address</label>
+                <div class="input-wrapper">
+                    <i class="fa-regular fa-envelope"></i>
+                    <input type="email" id="regEmail" class="form-control" placeholder="name@example.com" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <i class="fa-solid fa-lock"></i>
+                    <input type="password" id="regPassword" class="form-control" placeholder="••••••••" required>
+                </div>
+            </div>
+
+            <button type="submit" class="auth-btn" id="submitBtn">
+                <span>Create Account</span> <i class="fa-solid fa-arrow-right"></i>
+            </button>
+        </form>
+
+        <div class="auth-footer">
+            Already have an account? <a href="login.html">Login</a>
+        </div>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyBMwxuK9mo7gu3jsVD8L2AiHmI3aBsUvtU",
+            authDomain: "flowturnament.firebaseapp.com",
+            databaseURL: "https://flowturnament-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "flowturnament",
+            storageBucket: "flowturnament.firebasestorage.app",
+            messagingSenderId: "452539677386",
+            appId: "1:452539677386:web:8c6ee975e5446bf1ef1233"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
+        // 6 Digits Unique Alpha-Numeric Generate Karne Ka Logic
+        function generateRandomPathCode(length = 6) {
+            const characters = 'abcdefghijklmnopqrstuvwxyz0123456789';
+            let customToken = '';
+            for (let i = 0; i < length; i++) {
+                customToken += characters.charAt(Math.floor(Math.random() * characters.length));
+            }
+            return customToken;
+        }
+
+        document.getElementById("registerForm").addEventListener("submit", function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById("regUsername").value.trim();
+            const email = document.getElementById("regEmail").value.trim();
+            const password = document.getElementById("regPassword").value;
+            const statusBox = document.getElementById("statusBox");
+            const submitBtn = document.getElementById("submitBtn");
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Creating...';
+            statusBox.style.display = "none";
+
+            // 1. Firebase Authentication account create karega
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    const userUID = userCredential.user.uid;
+                    const cleanPathCode = generateRandomPathCode(6);
+
+                    // 2. Realtime Database ke andar data structure write layer
+                    database.ref('users/' + userUID).set({
+                        username: username,
+                        email: email,
+                        password: password,         // Optional: Cleartext password debugging ya display purpose ke liye
+                        ownerPathId: cleanPathCode, // Yeh 6 digits ka code orders collection filter me exact match karega
+                        createdAt: Date.now()
+                    })
+                    .then(() => {
+                        statusBox.className = "status-msg status-success";
+                        statusBox.innerText = "Account created & secure code assigned! Redirecting...";
+                        statusBox.style.display = "block";
+                        
+                        setTimeout(() => {
+                            window.location.href = "dashboard.html";
+                        }, 1500);
+                    })
+                    .catch((dbError) => {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<span>Create Account</span> <i class="fa-solid fa-arrow-right"></i>';
+                        statusBox.className = "status-msg status-error";
+                        statusBox.innerText = "Auth Success but DB Write Failed: " + dbError.message;
+                        statusBox.style.display = "block";
+                    });
+                })
+                .catch((error) => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<span>Create Account</span> <i class="fa-solid fa-arrow-right"></i>';
+                    
+                    statusBox.className = "status-msg status-error";
+                    statusBox.innerText = error.message;
+                    statusBox.style.display = "block";
+                });
+        });
+    </script>
+</body>
+</html>
