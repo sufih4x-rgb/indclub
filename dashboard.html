@@ -459,16 +459,18 @@
             }
         });
 
-        auth.onAuthStateChanged((user) => {
+                auth.onAuthStateChanged((user) => {
             if (user) {
                 // Fetching ownerPathId and vipStatus
                 database.ref('users/' + user.uid).on('value', (snapshot) => {
                     if (snapshot.exists()) {
                         const data = snapshot.val();
-                        const exactPathCode = data.ownerPathId;
+                        
+                        // FIX: Agar ownerPathId data me nahi milti hai toh user UID ke first 6 letters ko ID maan lega
+                        const exactPathCode = data.ownerPathId ? data.ownerPathId : user.uid.substring(0, 6);
                         
                         // Realtime database check for expiry timestamp
-                        vipExpiryTimestamp = data.vipExpiry; // Expected value format: Timestamp in millisecond
+                        vipExpiryTimestamp = data.vipExpiry; 
                         
                         // Client-side expiry validation logic
                         const now = Date.now();
@@ -481,7 +483,7 @@
                             database.ref('users/' + user.uid).update({ vipStatus: "off" });
                         }
 
-                        // Update Links
+                        // Update Links safely
                         document.getElementById("paymentHistoryLink").href = `history.html?id=${exactPathCode}`;
                         document.getElementById("adminPanelLink").href = `admin.html?id=${exactPathCode}`;
 
@@ -492,8 +494,9 @@
                         const globeIcon = document.getElementById("urlGlobeIcon");
 
                         if (isVip) {
-                            // Update URL Normally using admin controlled domain path
-                            const userUniqueUrl = `${baseDomainUrl}?id=${exactPathCode}`;
+                            // FIX: Dynamic domain check setup and verification
+                            let separator = baseDomainUrl.includes('?') ? '&' : '?';
+                            const userUniqueUrl = `${baseDomainUrl}${separator}id=${exactPathCode}`;
                             urlText.innerText = userUniqueUrl;
                             
                             // Reset copy box configurations to normal state
@@ -527,7 +530,6 @@
                             badge.innerText = "VIP OFF";
                             badge.className = "vip-badge vip-off";
                             
-                          // Hide real URL and turn the box into a premium locked link button
                             urlText.innerText = "Click and Buy VIP";
                             globeIcon.innerHTML = `<i class="fa-solid fa-lock"></i>`;
                             copyBtn.style.display = "none";
@@ -546,6 +548,7 @@
                 window.location.href = "login.html";
             }
         });
+        
 
         function startVipCountdown() {
             if (vipCountdownInterval) clearInterval(vipCountdownInterval);
